@@ -75,7 +75,8 @@ function factory() {
       }
     });
 
-    dialog.addEventListener('close', function() {
+    dialog.addEventListener('close', function(e) {
+      e.stopPropagation();
       scope.show = open = false;
       var count = body.data('stackables') - 1;
       body.data('stackables', count);
