@@ -42,6 +42,11 @@ dialog[open] {
   z-index: 1060;
 }
 
+/* Override this to change backdrop w/HTML5 dialog and polyfill */
+.stackable::backdrop,
+.stackable + .backdrop {
+}
+
 /* A bootstrap-based dialog */
 .stackable-dialog {
   position: absolute;
@@ -65,7 +70,11 @@ dialog[open] {
   background-clip: padding-box;
 }
 
-/* Override this to change backdrop w/HTML5 dialog and polyfill */
-.stackable::backdrop,
-.stackable + .backdrop {
+/* Animation for showing/hiding stackable; requires ng-animate */
+.stackable {
+  -webkit-transition: all linear 150ms;
+  transition: all linear 150ms;
+}
+.stackable.ng-hide {
+  opacity: 0;
 }

@@ -11,9 +11,10 @@
 
 var module = angular.module('stackables', []);
 
-module.directive({'stackable': factory});
+module.directive({stackable: stackableDirective});
+module.directive({stackableCancel: stackableCancelDirective});
 
-function factory() {
+function stackableDirective() {
   return {
     scope: {
       show: '=stackable',
@@ -26,9 +27,9 @@ function factory() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable"> \
-        <div data-ng-if="show" class="stackable-content"> \
-          <div data-ng-transclude></div> \
+      <dialog class="stackable" ng-show="show"> \
+        <div ng-if="show" class="stackable-content"> \
+          <div ng-transclude></div> \
         </div> \
       </dialog>',
     controller: ['$scope', Controller],
@@ -118,6 +119,16 @@ function factory() {
   }
 }
 
-return {stackable: factory};
+function stackableCancelDirective() {
+  return {
+    restrict: 'A',
+    require: '^stackable',
+    link: function(scope, element, attrs, ctrl) {
+      element.on('click', function() {
+        ctrl.close('canceled', null);
+      });
+    }
+  };
+}
 
 })();
