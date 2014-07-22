@@ -2,6 +2,8 @@
 
 /* Polyfill */
 dialog {
+  /* Set top to 0 to prevent polyfill from moving dialog */
+  top: 0;
   display: none;
 }
 dialog[open] {
@@ -16,13 +18,24 @@ dialog[open] {
   background: rgba(0, 0, 0, 0.1);
 }
 
-/* Prevent scroll on body */
-.stackable-modal-open {
-  overflow: hidden;
+/* Main stackable transparent container sized to content */
+.stackable {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: -moz-fit-content;
+  width: -webkit-fit-content;
+  width: fit-content;
+  height: -moz-fit-content;
+  height: -webkit-fit-content;
+  height: fit-content;
+  z-index: 1050;
+  border: 0;
+  background: rgba(0, 0, 0, 0);
 }
 
-/* Fills viewport with main stackable container to allow scrolling inside */
-.stackable {
+/* Stretch stackable container to fill viewport to allow scrolling modals */
+.stackable-modal .stackable {
   position: fixed;
   top: 0;
   right: 0;
@@ -32,9 +45,23 @@ dialog[open] {
   height: auto;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  z-index: 1050;
-  border: 0;
-  background: rgba(0, 0, 0, 0);
+}
+
+/* Stretch stackable container to fill viewport to allow scrolling modals */
+.stackable.stackable-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Prevent scroll on body */
+.stackable-modal-open {
+  overflow: hidden;
 }
 
 /* Position stackable content above stackable container */
@@ -47,7 +74,16 @@ dialog[open] {
 .stackable + .backdrop {
 }
 
-/* A bootstrap-based dialog */
+/* Animation for showing/hiding stackable; requires ng-animate */
+.stackable {
+  -webkit-transition: all linear 150ms;
+  transition: all linear 150ms;
+}
+.stackable.ng-hide {
+  opacity: 0;
+}
+
+/* Bootstrap-based dialogs */
 .stackable-dialog {
   position: absolute;
   top: 10%;
@@ -70,11 +106,153 @@ dialog[open] {
   background-clip: padding-box;
 }
 
-/* Animation for showing/hiding stackable; requires ng-animate */
-.stackable {
-  -webkit-transition: all linear 150ms;
-  transition: all linear 150ms;
+/* Bootstrap-based popovers */
+
+/* Container for the popover stackable that is positioned according to
+  a popover trigger element */
+.stackable-popover {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-.stackable.ng-hide {
-  opacity: 0;
+
+.stackable-popover-content {
+  position: absolute;
+  padding: 0;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 18px;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  outline: none;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding-box;
+  background-clip: padding-box;
+}
+
+.stackable-popover.stackable-top {
+  margin-top: -10px;
+}
+.stackable-popover.stackable-right {
+  margin-left: 10px;
+}
+.stackable-popover.stackable-bottom {
+  margin-top: 10px;
+}
+.stackable-popover.stackable-left {
+  margin-left: -10px;
+}
+
+.stackable-popover .stackable-arrow,
+.stackable-popover .stackable-arrow:after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.stackable-popover .stackable-arrow {
+  border-width: 11px;
+}
+
+.stackable-popover .stackable-arrow:after {
+  border-width: 10px;
+  content: "";
+}
+
+.stackable-popover.stackable-top .stackable-arrow {
+  bottom: -11px;
+  left: 50%;
+  margin-left: -11px;
+  border-top-color: #999;
+  border-top-color: rgba(0, 0, 0, 0.25);
+  border-bottom-width: 0;
+}
+
+.stackable-popover.stackable-top .stackable-arrow:after {
+  bottom: 1px;
+  margin-left: -10px;
+  border-top-color: #ffffff;
+  border-bottom-width: 0;
+}
+
+.stackable-popover.stackable-right .stackable-arrow {
+  top: 50%;
+  left: -11px;
+  margin-top: -11px;
+  border-right-color: #999;
+  border-right-color: rgba(0, 0, 0, 0.25);
+  border-left-width: 0;
+}
+
+.stackable-popover.stackable-right .stackable-arrow:after {
+  bottom: -10px;
+  left: 1px;
+  border-right-color: #ffffff;
+  border-left-width: 0;
+}
+
+.stackable-popover.stackable-bottom .stackable-arrow {
+  top: -11px;
+  left: 50%;
+  margin-left: -11px;
+  border-bottom-color: #999;
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+  border-top-width: 0;
+}
+
+.stackable-popover.stackable-bottom .stackable-arrow:after {
+  top: 1px;
+  margin-left: -10px;
+  border-bottom-color: #ffffff;
+  border-top-width: 0;
+}
+
+.stackable-popover.stackable-left .stackable-arrow {
+  top: 50%;
+  right: -11px;
+  margin-top: -11px;
+  border-left-color: #999;
+  border-left-color: rgba(0, 0, 0, 0.25);
+  border-right-width: 0;
+}
+
+.stackable-popover.stackable-left .stackable-arrow:after {
+  right: 1px;
+  bottom: -10px;
+  border-left-color: #ffffff;
+  border-right-width: 0;
+}
+
+.stackable-popover-title {
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 18px;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  -webkit-border-radius: 5px 5px 0 0;
+  -moz-border-radius: 5px 5px 0 0;
+  border-radius: 5px 5px 0 0;
+}
+
+.stackable-popover-body {
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 18px;
+}
+
+.stackable-popover-body ul.unstyled {
+  margin-bottom: 0;
 }
