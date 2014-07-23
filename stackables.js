@@ -245,6 +245,7 @@ function stackablePopoverDirective() {
     scope: {
       state: '=stackablePopover',
       hideArrow: '=?stackableHideArrow',
+      alignment: '@?stackableAlignment',
       placement: '@?stackablePlacement',
       enableEscape: '=?stackableEnableEscape',
       disableBlurClose: '=?stackableDisableBlurClose'
@@ -254,10 +255,15 @@ function stackablePopoverDirective() {
     transclude: true,
     template: ' \
       <div class="stackable-popover" ng-class="{ \
-        \'stackable-top\': !placement || placement == \'top\', \
-        \'stackable-right\': placement == \'right\', \
-        \'stackable-bottom\': placement == \'bottom\', \
-        \'stackable-left\': placement == \'left\', \
+        \'stackable-place-top\': !placement || placement == \'top\', \
+        \'stackable-place-right\': placement == \'right\', \
+        \'stackable-place-bottom\': placement == \'bottom\', \
+        \'stackable-place-left\': placement == \'left\', \
+        \'stackable-align-center\': !alignment || alignment == \'center\', \
+        \'stackable-align-top\': alignment == \'top\', \
+        \'stackable-align-right\': alignment == \'right\', \
+        \'stackable-align-bottom\': alignment == \'bottom\', \
+        \'stackable-align-left\': alignment == \'left\', \
         \'stackable-no-arrow\': hideArrow}"> \
         <div stackable="state.show"> \
           <div class="stackable-popover-content"> \
@@ -336,32 +342,44 @@ function stackablePopoverDirective() {
 
         // position popover
         var position = {top: 0, left: 0};
-        if(scope.placement === 'top' || scope.placement === 'bottom') {
-          if(scope.hideArrow) {
-            position.left = (scope.state.position.left +
-              scope.state.position.width - width);
-          } else {
+        var alignment = scope.alignment || 'center';
+        var placement = scope.placement || 'top';
+        if(placement === 'top' || placement === 'bottom') {
+          // treat invalid 'top' or 'bottom' as 'center'
+          if(['center', 'top', 'bottom'].indexOf(alignment) !== -1) {
             var triggerCenterX = (scope.state.position.left +
               scope.state.position.width / 2);
             position.left = triggerCenterX - width / 2;
+          } else if(alignment === 'left') {
+            position.left = scope.state.position.left;
+          } else {
+            // alignment 'right'
+            position.left = (scope.state.position.left +
+              scope.state.position.width - width);
           }
           position.top = scope.state.position.top;
-          if(scope.placement === 'top') {
+          if(placement === 'top') {
             position.top -= height;
           } else {
             position.top += scope.state.position.height;
           }
         } else {
-          // 'left' or 'right'
-          if(scope.hideArrow) {
-            position.top = scope.state.position.top;
-          } else {
+          // else placement is 'left' or 'right'
+
+          // treat invalid 'left' or 'right' as 'center'
+          if(['center', 'left', 'right'].indexOf(alignment) !== -1) {
             var triggerCenterY = (scope.state.position.top +
               scope.state.position.height / 2);
             position.top = triggerCenterY - height / 2;
+          } else if(alignment === 'top') {
+            position.top = scope.state.position.top;
+          } else {
+            // alignment 'bottom'
+            position.top = (scope.state.position.top +
+              scope.state.position.height - height);
           }
           position.left = scope.state.position.left;
-          if(scope.placement === 'left') {
+          if(placement === 'left') {
             position.left -= width;
           } else {
             position.left += scope.state.position.width;
