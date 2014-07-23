@@ -246,7 +246,6 @@ function stackablePopoverDirective() {
   return {
     scope: {
       state: '=stackablePopover',
-      title: '@?stackableTitle',
       placement: '@?stackablePlacement',
       enableEscape: '=?stackableEnableEscape',
       disableBlurClose: '=?stackableDisableBlurClose'
