@@ -230,7 +230,7 @@ function stackableDirective() {
 
 function stackableCancelDirective() {
   return {
-    restrict: 'A',
+    restrict: 'AC',
     require: '^stackable',
     link: function(scope, element, attrs, ctrl) {
       element.on('click', function() {
