@@ -66,11 +66,9 @@ module.directive({
     stackable-placement="bottom"
     stackable-alignment="center"
     stackable-enable-escape="true">
-    <div class="stackable-dialog">
-      <h3 class="stackable-popover-title">Title</h3>
-      <div class="stackable-popover-body">
-        <p>Hello World</p>
-      </div>
+    <h3 class="stackable-popover-title">Title</h3>
+    <div class="stackable-popover-body">
+      <p>Hello World</p>
     </div>
   </div>
 </div>
@@ -85,18 +83,16 @@ module.directive({
   </a>
 
   <div stackable-popover="test.menuState"
+    stackable-hide-arrow="true"
     stackable-placement="bottom"
-    stackable-alignment="center"
+    stackable-alignment="right"
     stackable-enable-escape="true">
-    <div class="stackable-dialog">
-      <h3 class="stackable-popover-title">Title</h3>
-      <div class="stackable-popover-body">
-        <ul class="unstyled">
-          <li>
-            <a href="#">Menu Item</a>
-          </li>
-        </ul>
-      </div>
+    <div class="stackable-popover-body">
+      <ul class="unstyled">
+        <li>
+          <a href="#">Menu Item</a>
+        </li>
+      </ul>
     </div>
   </div>
 </div>
