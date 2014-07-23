@@ -5,8 +5,10 @@ AngularJS stackable widgets (modals, popovers, menus) that use HTML5 dialog
 
 # Examples
 
+## A simple modal
+
 ```html
-<div ng-controller="TestController as page">
+<div ng-controller="TestController as test">
   <div stackable="test.isOpen"
     stackable-modal="true"
     stackable-disable-escape="false"
@@ -50,4 +52,52 @@ module.directive({
     };
   }
 });
+```
+
+## A simple popover
+
+```html
+<div ng-controller="TestController as test">
+  <a class="btn" stackable-trigger="test.popoverState">
+    <i class="caret"></i>
+  </a>
+
+  <div stackable-popover="test.popoverState"
+    stackable-placement="bottom"
+    stackable-alignment="center"
+    stackable-enable-escape="true">
+    <div class="stackable-dialog">
+      <h3 class="stackable-popover-title">Title</h3>
+      <div class="stackable-popover-body">
+        <p>Hello World</p>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+## A simple menu
+
+```html
+<div ng-controller="TestController as test">
+  <a class="btn" stackable-trigger="test.menuState">
+    <i class="caret"></i>
+  </a>
+
+  <div stackable-popover="test.menuState"
+    stackable-placement="bottom"
+    stackable-alignment="center"
+    stackable-enable-escape="true">
+    <div class="stackable-dialog">
+      <h3 class="stackable-popover-title">Title</h3>
+      <div class="stackable-popover-body">
+        <ul class="unstyled">
+          <li>
+            <a href="#">Menu Item</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 ```
