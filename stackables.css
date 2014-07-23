@@ -150,6 +150,19 @@ dialog[open] {
   margin-left: -10px;
 }
 
+.stackable-popover.stackable-top.stackable-no-arrow {
+  margin-top: -2px;
+}
+.stackable-popover.stackable-right.stackable-no-arrow {
+  margin-left: 2px;
+}
+.stackable-popover.stackable-bottom.stackable-no-arrow {
+  margin-top: 2px;
+}
+.stackable-popover.stackable-left.stackable-no-arrow {
+  margin-left: -2px;
+}
+
 .stackable-popover .stackable-arrow,
 .stackable-popover .stackable-arrow:after {
   position: absolute;

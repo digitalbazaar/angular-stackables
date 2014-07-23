@@ -14,9 +14,7 @@ var module = angular.module('stackables', []);
 module.directive({stackable: stackableDirective});
 module.directive({stackableCancel: stackableCancelDirective});
 module.directive({stackablePopover: stackablePopoverDirective});
-module.directive({
-  stackablePopoverTrigger: ['$parse', stackablePopoverTriggerDirective]
-});
+module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
 function stackableDirective() {
   return {
@@ -246,6 +244,7 @@ function stackablePopoverDirective() {
   return {
     scope: {
       state: '=stackablePopover',
+      hideArrow: '=?stackableHideArrow',
       placement: '@?stackablePlacement',
       enableEscape: '=?stackableEnableEscape',
       disableBlurClose: '=?stackableDisableBlurClose'
@@ -258,10 +257,11 @@ function stackablePopoverDirective() {
         \'stackable-top\': !placement || placement == \'top\', \
         \'stackable-right\': placement == \'right\', \
         \'stackable-bottom\': placement == \'bottom\', \
-        \'stackable-left\': placement == \'left\'}"> \
+        \'stackable-left\': placement == \'left\', \
+        \'stackable-no-arrow\': hideArrow}"> \
         <div stackable="state.show"> \
           <div class="stackable-popover-content"> \
-            <div class="stackable-arrow"></div> \
+            <div ng-if="!hideArrow" class="stackable-arrow"></div> \
             <div ng-transclude></div> \
           </div> \
         </div> \
@@ -276,7 +276,7 @@ function stackablePopoverDirective() {
       transcludeFn(scope.$parent, function(clone) {
         var content = angular.element(' \
           <div class="stackable-popover-content" style="width:auto"> \
-            <div class="stackable-arrow"></div> \
+            <div ng-if="!hideArrow" class="stackable-arrow"></div> \
           </div>');
         content.append(clone);
         content.css({display: 'none'});
@@ -291,7 +291,7 @@ function stackablePopoverDirective() {
         });
       });
 
-      // whenever trigger state changes, reposition popover
+      // whenever state changes, reposition popover
       scope.$watch('state', function() {
         setTimeout(reposition);
       }, true);
@@ -309,7 +309,7 @@ function stackablePopoverDirective() {
       function closeOnClick(e) {
         // close if target is not the trigger and is not in the popover
         var target = angular.element(e.target);
-        var trigger = target.data('stackable-popover-state');
+        var trigger = target.data('stackable-state');
         if(scope.state !== trigger && target.closest(element).length === 0) {
           scope.state.show = false;
           scope.$apply();
@@ -337,9 +337,14 @@ function stackablePopoverDirective() {
         // position popover
         var position = {top: 0, left: 0};
         if(scope.placement === 'top' || scope.placement === 'bottom') {
-          var triggerCenterX = (scope.state.position.left +
-            scope.state.position.width / 2);
-          position.left = triggerCenterX - width / 2;
+          if(scope.hideArrow) {
+            position.left = (scope.state.position.left +
+              scope.state.position.width - width);
+          } else {
+            var triggerCenterX = (scope.state.position.left +
+              scope.state.position.width / 2);
+            position.left = triggerCenterX - width / 2;
+          }
           position.top = scope.state.position.top;
           if(scope.placement === 'top') {
             position.top -= height;
@@ -348,9 +353,13 @@ function stackablePopoverDirective() {
           }
         } else {
           // 'left' or 'right'
-          var triggerCenterY = (scope.state.position.top +
-            scope.state.position.height / 2);
-          position.top = triggerCenterY - height / 2;
+          if(scope.hideArrow) {
+            position.top = scope.state.position.top;
+          } else {
+            var triggerCenterY = (scope.state.position.top +
+              scope.state.position.height / 2);
+            position.top = triggerCenterY - height / 2;
+          }
           position.left = scope.state.position.left;
           if(scope.placement === 'left') {
             position.left -= width;
@@ -366,17 +375,17 @@ function stackablePopoverDirective() {
   }
 }
 
-function stackablePopoverTriggerDirective($parse) {
+function stackableTriggerDirective($parse) {
   return {
     restrict: 'A',
     link: Link
   };
 
   function Link(scope, element, attrs) {
-    // track popover state
+    // track stackable state
     var state;
-    initState(attrs.stackablePopoverTrigger);
-    attrs.$observe('stackablePopoverTrigger', function(value) {
+    initState(attrs.stackableTrigger);
+    attrs.$observe('stackableTrigger', function(value) {
       initState(value);
     });
 
@@ -408,7 +417,7 @@ function stackablePopoverTriggerDirective($parse) {
       }
       updateState(state);
       set(scope, state);
-      element.data('stackable-popover-state', state);
+      element.data('stackable-state', state);
     }
 
     function updateState(state) {
