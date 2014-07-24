@@ -413,13 +413,26 @@ function stackableTriggerDirective($parse) {
       angular.element(window).off('resize', resized);
     });
 
-    // toggle show on click
-    element.on('click', function() {
-      scope.$apply(function() {
+    var toggleEvent = attrs.stackableToggle || 'click';
+    if(toggleEvent === 'hover') {
+      // show on enter, hide on leave
+      element.hover(function() {
+        state.show = true;
+        updateState(state);
+        scope.$apply();
+      }, function() {
+        state.show = false;
+        updateState(state);
+        scope.$apply();
+      });
+    } else {
+      // default to click
+      element.on('click', function() {
         state.show = !state.show;
         updateState(state);
+        scope.$apply();
       });
-    });
+    }
 
     function resized() {
       updateState(state);
