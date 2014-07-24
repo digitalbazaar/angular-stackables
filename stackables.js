@@ -13,7 +13,7 @@ var module = angular.module('stackables', []);
 
 module.directive({stackable: stackableDirective});
 module.directive({stackableCancel: stackableCancelDirective});
-module.directive({stackablePopover: stackablePopoverDirective});
+module.directive({stackablePopover: ['$compile', stackablePopoverDirective]});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
 function stackableDirective() {
@@ -21,6 +21,7 @@ function stackableDirective() {
     scope: {
       show: '=stackable',
       modal: '=?stackableModal',
+      persist: '=?persistContent',
       disableEscape: '=?stackableDisableEscape',
       closing: '&?stackableClosing',
       closed: '&?stackableClosed'
@@ -29,115 +30,9 @@ function stackableDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable" ng-class="{\'stackable-modal\': modal}" \
+      <dialog class="stackable{{modal && \' stackable-modal\'}}" \
         ng-show="show"> \
-        <div ng-if="show" class="stackable-content"> \
-          <div ng-transclude></div> \
-        </div> \
-      </dialog>',
-    controller: ['$scope', Controller],
-    link: Link
-  };
-
-  function Controller($scope) {
-    var self = this;
-    var stackable = $scope.stackable = self;
-
-    // close the stackable unless 'closing' callback aborts
-    self.close = function(err, result) {
-      var closing = $scope.closing || angular.noop;
-      var shouldClose = closing.call($scope.$parent, {
-        err: err,
-        result: result
-      });
-      Promise.resolve(shouldClose).then(function() {
-        if(shouldClose !== false) {
-          stackable.error = err;
-          stackable.result = result;
-          $scope.show = false;
-          $scope.$apply();
-        }
-      });
-    };
-  }
-
-  function Link(scope, element) {
-    var open = false;
-    var body = angular.element('body');
-    var dialog = element[0];
-    // use polyfill if necessary
-    if(!dialog.showModal && typeof dialogPolyfill !== 'undefined') {
-      dialogPolyfill.registerDialog(dialog);
-    }
-
-    dialog.addEventListener('cancel', function(e) {
-      if(!!scope.disableEscape) {
-        e.preventDefault();
-      } else {
-        scope.stackable.error = 'canceled';
-        scope.stackable.result = null;
-      }
-    });
-
-    dialog.addEventListener('close', function(e) {
-      e.stopPropagation();
-      scope.show = open = false;
-      var count = body.data('stackables') - 1;
-      body.data('stackables', count);
-      if(count === 0) {
-        body.removeClass('stackable-modal-open');
-      }
-      scope.$apply();
-      if(scope.closed) {
-        scope.closed.call(scope.$parent, {
-          err: scope.stackable.error,
-          result: scope.stackable.result
-        });
-      }
-    });
-
-    scope.$watch('show', function(value) {
-      if(value) {
-        if(!open) {
-          if(!!scope.modal) {
-            dialog.showModal();
-            body.addClass('stackable-modal-open');
-          } else {
-            dialog.show();
-          }
-          open = true;
-          scope.stackable.error = scope.stackable.result = undefined;
-          var count = body.data('stackables') || 0;
-          body.data('stackables', count + 1);
-        }
-      } else if(open) {
-        // schedule dialog close to avoid $digest already in progress
-        // as 'close' event handler may be called from here or externally
-        setTimeout(function() {
-          dialog.close();
-        });
-        open = false;
-      }
-    });
-  }
-}
-
-function stackableDirective() {
-  return {
-    scope: {
-      show: '=stackable',
-      modal: '=?stackableModal',
-      disableEscape: '=?stackableDisableEscape',
-      closing: '&?stackableClosing',
-      closed: '&?stackableClosed'
-    },
-    restrict: 'A',
-    replace: true,
-    transclude: true,
-    template: ' \
-      <dialog class="stackable" ng-class="{\'stackable-modal\': modal}" \
-        ng-show="show"> \
-        <div ng-if="show" class="stackable-content"> \
+        <div ng-if="show || persist" class="stackable-content"> \
           <div ng-transclude></div> \
         </div> \
       </dialog>',
@@ -240,7 +135,7 @@ function stackableCancelDirective() {
   };
 }
 
-function stackablePopoverDirective() {
+function stackablePopoverDirective($compile) {
   return {
     scope: {
       state: '=stackablePopover',
@@ -253,53 +148,50 @@ function stackablePopoverDirective() {
     restrict: 'A',
     replace: true,
     transclude: true,
-    template: ' \
-      <div class="stackable-popover" ng-class="{ \
-        \'stackable-place-top\': !placement || placement == \'top\', \
-        \'stackable-place-right\': placement == \'right\', \
-        \'stackable-place-bottom\': placement == \'bottom\', \
-        \'stackable-place-left\': placement == \'left\', \
-        \'stackable-align-center\': !alignment || alignment == \'center\', \
-        \'stackable-align-top\': alignment == \'top\', \
-        \'stackable-align-right\': alignment == \'right\', \
-        \'stackable-align-bottom\': alignment == \'bottom\', \
-        \'stackable-align-left\': alignment == \'left\', \
-        \'stackable-no-arrow\': hideArrow}"> \
-        <div stackable="state.show"> \
-          <div class="stackable-popover-content"> \
-            <div ng-if="!hideArrow" class="stackable-arrow"></div> \
-            <div ng-transclude></div> \
-          </div> \
-        </div> \
-      </div>',
+    template: '<div style="display:none"></div>',
     compile: Compile
   };
 
   function Compile(tElement, tAttrs, transcludeFn) {
-    var extents = {};
     return function(scope, element) {
-      // measure popover content
-      transcludeFn(scope.$parent, function(clone) {
-        var content = angular.element(' \
-          <div class="stackable-popover-content" style="width:auto"> \
+      var template = ' \
+        <div stackable="state.show" class="stackable-popover" \
+          ng-class="{ \
+          \'stackable-place-top\': !placement || placement == \'top\', \
+          \'stackable-place-right\': placement == \'right\', \
+          \'stackable-place-bottom\': placement == \'bottom\', \
+          \'stackable-place-left\': placement == \'left\', \
+          \'stackable-align-center\': !alignment || alignment == \'center\', \
+          \'stackable-align-top\': alignment == \'top\', \
+          \'stackable-align-right\': alignment == \'right\', \
+          \'stackable-align-bottom\': alignment == \'bottom\', \
+          \'stackable-align-left\': alignment == \'left\', \
+          \'stackable-no-arrow\': hideArrow}"> \
+          <div class="stackable-popover-content" style="display:none"> \
             <div ng-if="!hideArrow" class="stackable-arrow"></div> \
-          </div>');
-        content.append(clone);
-        content.css({display: 'none'});
-        angular.element('body').append(content);
-        extents.height = content.outerHeight(true);
-        extents.width = content.outerWidth(true);
-        // setTimeout hack to ensure content size has settled on chrome
-        setTimeout(function() {
-          extents.height = content.outerHeight(true);
-          extents.width = content.outerWidth(true);
-          content.remove();
-        });
-      });
+              <div ng-transclude></div> \
+          </div> \
+        </div>';
+      var popover = angular.element(template);
+      $compile(popover, transcludeFn)(scope);
+      var body = angular.element('body');
+      var container = body.find('.stackable-popovers');
+      if(!container.length) {
+        body.append('<div class="stackable-popovers"></div>');
+        container = body.find('.stackable-popovers');
+      }
+      container.append(popover);
 
-      // whenever state changes, reposition popover
+      // whenever state changes, schedule repositioning
       scope.$watch('state', function() {
-        setTimeout(reposition);
+        setTimeout(function() {
+          // only reposition if content is shown
+          var content = popover.find('.stackable-popover-content');
+          if(!content.length) {
+            return;
+          }
+          reposition(content);
+        });
       }, true);
 
       // close when pressing escape anywhere or clicking away
@@ -330,15 +222,10 @@ function stackablePopoverDirective() {
         }
       }
 
-      function reposition() {
-        // resize popover content
-        var content = element.find('.stackable-popover-content');
-        if(!content.length) {
-          return;
-        }
-        content.css(extents);
-        var height = content.outerHeight(true);
+      function reposition(content) {
+        content.css('display', 'none');
         var width = content.outerWidth(true);
+        var height = content.outerHeight(true);
 
         // position popover
         var position = {top: 0, left: 0};
@@ -387,7 +274,8 @@ function stackablePopoverDirective() {
         }
         position.top += 'px';
         position.left += 'px';
-        element.css(position);
+        popover.css(position);
+        content.css('display', '');
       }
     };
   }

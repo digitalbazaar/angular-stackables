@@ -35,19 +35,6 @@ dialog[open] {
 }
 
 /* Stretch stackable container to fill viewport to allow scrolling modals */
-.stackable-modal .stackable {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  width: auto;
-  height: auto;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Stretch stackable container to fill viewport to allow scrolling modals */
 .stackable.stackable-modal {
   position: fixed;
   top: 0;
@@ -64,8 +51,21 @@ dialog[open] {
   overflow: hidden;
 }
 
+/* Container for all stackable popovers */
+.stackable-popovers {
+  position: static;
+  overflow: hidden;
+}
+
+/* Allow width and height to expand */
+.stackable.stackable-popover {
+  width: auto;
+  height: auto;
+}
+
 /* Position stackable content above stackable container */
 .stackable-content {
+  /*position: static;*/
   z-index: 1060;
 }
 
@@ -76,8 +76,8 @@ dialog[open] {
 
 /* Animation for showing/hiding stackable; requires ng-animate */
 .stackable {
-  -webkit-transition: all linear 150ms;
-  transition: all linear 150ms;
+  -webkit-transition: opacity linear 150ms;
+  transition: opacity linear 150ms;
 }
 .stackable.ng-hide {
   opacity: 0;
@@ -107,17 +107,9 @@ dialog[open] {
 }
 
 /* Bootstrap-based popovers */
-
-/* Container for the popover stackable that is positioned according to
-  a popover trigger element */
-.stackable-popover {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 .stackable-popover-content {
   position: absolute;
+  width: auto;
   padding: 0;
   font-size: 14px;
   font-weight: normal;
