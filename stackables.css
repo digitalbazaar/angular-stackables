@@ -34,6 +34,15 @@ dialog[open] {
   background: rgba(0, 0, 0, 0);
 }
 
+/* Animation for showing/hiding stackable; requires ng-animate */
+.stackable {
+  -webkit-transition: opacity linear 150ms;
+  transition: opacity linear 150ms;
+}
+.stackable.ng-hide {
+  opacity: 0;
+}
+
 /* Stretch stackable container to fill viewport to allow scrolling modals */
 .stackable.stackable-modal {
   position: fixed;
@@ -51,36 +60,23 @@ dialog[open] {
   overflow: hidden;
 }
 
-/* Container for all stackable popovers */
-.stackable-popovers {
-  position: static;
-  overflow: hidden;
-}
-
-/* Allow width and height to expand */
+/* Allow popover to expand; prevent scrolling with hidden overflow */
 .stackable.stackable-popover {
+  position: static;
   width: auto;
   height: auto;
+  overflow: hidden;
 }
 
 /* Position stackable content above stackable container */
 .stackable-content {
-  /*position: static;*/
+  position: static;
   z-index: 1060;
 }
 
 /* Override this to change backdrop w/HTML5 dialog and polyfill */
 .stackable::backdrop,
 .stackable + .backdrop {
-}
-
-/* Animation for showing/hiding stackable; requires ng-animate */
-.stackable {
-  -webkit-transition: opacity linear 150ms;
-  transition: opacity linear 150ms;
-}
-.stackable.ng-hide {
-  opacity: 0;
 }
 
 /* Bootstrap-based dialogs */
@@ -129,34 +125,34 @@ dialog[open] {
   background-clip: padding-box;
 }
 
-.stackable-popover.stackable-place-top {
+.stackable-popover-content.stackable-place-top {
   margin-top: -10px;
 }
-.stackable-popover.stackable-place-right {
+.stackable-popover-content.stackable-place-right {
   margin-left: 10px;
 }
-.stackable-popover.stackable-place-bottom {
+.stackable-popover-content.stackable-place-bottom {
   margin-top: 10px;
 }
-.stackable-popover.stackable-place-left {
+.stackable-popover-content.stackable-place-left {
   margin-left: -10px;
 }
 
-.stackable-popover.stackable-place-top.stackable-no-arrow {
+.stackable-popover-content.stackable-place-top.stackable-no-arrow {
   margin-top: -2px;
 }
-.stackable-popover.stackable-place-right.stackable-no-arrow {
+.stackable-popover-content.stackable-place-right.stackable-no-arrow {
   margin-left: 2px;
 }
-.stackable-popover.stackable-place-bottom.stackable-no-arrow {
+.stackable-popover-content.stackable-place-bottom.stackable-no-arrow {
   margin-top: 2px;
 }
-.stackable-popover.stackable-place-left.stackable-no-arrow {
+.stackable-popover-content.stackable-place-left.stackable-no-arrow {
   margin-left: -2px;
 }
 
-.stackable-popover .stackable-arrow,
-.stackable-popover .stackable-arrow:after {
+.stackable-popover-content .stackable-arrow,
+.stackable-popover-content .stackable-arrow:after {
   position: absolute;
   display: block;
   width: 0;
@@ -165,90 +161,90 @@ dialog[open] {
   border-style: solid;
 }
 
-.stackable-popover .stackable-arrow {
+.stackable-popover-content .stackable-arrow {
   border-width: 11px;
 }
 
-.stackable-popover .stackable-arrow:after {
+.stackable-popover-content .stackable-arrow:after {
   border-width: 10px;
   content: "";
 }
 
-.stackable-popover.stackable-place-top .stackable-arrow {
+.stackable-popover-content.stackable-place-top .stackable-arrow {
   bottom: -11px;
   border-top-color: #999;
   border-top-color: rgba(0, 0, 0, 0.25);
   border-bottom-width: 0;
 }
-.stackable-popover.stackable-place-top .stackable-arrow:after {
+.stackable-popover-content.stackable-place-top .stackable-arrow:after {
   bottom: 1px;
   margin-left: -10px;
   border-top-color: #ffffff;
   border-bottom-width: 0;
 }
 
-.stackable-popover.stackable-place-right .stackable-arrow {
+.stackable-popover-content.stackable-place-right .stackable-arrow {
   left: -11px;
   border-right-color: #999;
   border-right-color: rgba(0, 0, 0, 0.25);
   border-left-width: 0;
 }
-.stackable-popover.stackable-place-right .stackable-arrow:after {
+.stackable-popover-content.stackable-place-right .stackable-arrow:after {
   bottom: -10px;
   left: 1px;
   border-right-color: #ffffff;
   border-left-width: 0;
 }
 
-.stackable-popover.stackable-place-bottom .stackable-arrow {
+.stackable-popover-content.stackable-place-bottom .stackable-arrow {
   top: -11px;
   border-bottom-color: #999;
   border-bottom-color: rgba(0, 0, 0, 0.25);
   border-top-width: 0;
 }
-.stackable-popover.stackable-place-bottom .stackable-arrow:after {
+.stackable-popover-content.stackable-place-bottom .stackable-arrow:after {
   top: 1px;
   margin-left: -10px;
   border-bottom-color: #ffffff;
   border-top-width: 0;
 }
 
-.stackable-popover.stackable-place-left .stackable-arrow {
+.stackable-popover-content.stackable-place-left .stackable-arrow {
   right: -11px;
   border-left-color: #999;
   border-left-color: rgba(0, 0, 0, 0.25);
   border-right-width: 0;
 }
-.stackable-popover.stackable-place-left .stackable-arrow:after {
+.stackable-popover-content.stackable-place-left .stackable-arrow:after {
   right: 1px;
   bottom: -10px;
   border-left-color: #ffffff;
   border-right-width: 0;
 }
 
-.stackable-popover.stackable-place-top.stackable-align-center .stackable-arrow,
-.stackable-popover.stackable-place-bottom.stackable-align-center .stackable-arrow {
+.stackable-popover-content.stackable-place-top.stackable-align-center .stackable-arrow,
+.stackable-popover-content.stackable-place-bottom.stackable-align-center .stackable-arrow {
   left: 50%;
   margin-left: -11px;
 }
-.stackable-popover.stackable-place-left.stackable-align-center .stackable-arrow,
-.stackable-popover.stackable-place-right.stackable-align-center .stackable-arrow {
+.stackable-popover-content.stackable-place-left.stackable-align-center .stackable-arrow,
+.stackable-popover-content.stackable-place-right.stackable-align-center .stackable-arrow {
   top: 50%;
   margin-top: -11px;
 }
-.stackable-popover.stackable-align-top .stackable-arrow {
+.stackable-popover-content.stackable-align-top .stackable-arrow {
   top: 0;
   margin-top: 3px;
 }
-.stackable-popover.stackable-align-right .stackable-arrow {
+.stackable-popover-content.stackable-align-right .stackable-arrow {
   left: 100%;
   margin-left: -27px;
 }
-.stackable-popover.stackable-align-bottom .stackable-arrow {
+.stackable-popover-content.stackable-align-bottom .stackable-arrow {
   top: 100%;
   margin-top: -25px;
 }
-.stackable-popover.stackable-align-left .stackable-arrow {
+.stackable-popover-content.stackable-align-left .stackable-arrow {
   left: 0;
   margin-left: 5px;
 }
