@@ -340,13 +340,6 @@ function stackableTriggerDirective($parse) {
     } else {
       // default to click
       element.on('click', function() {
-        // clear any selection
-        if(document.selection && document.selection.empty) {
-          document.selection.empty();
-        } else if(window.getSelection) {
-          window.getSelection().removeAllRanges();
-        }
-
         // indicate trigger was clicked
         state.triggerClicked = true;
         state.show = !state.show;
