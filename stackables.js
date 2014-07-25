@@ -151,30 +151,33 @@ function stackablePopoverDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <div> \
-        <div stackable="state.show" class="stackable-popover"> \
-          <div class="stackable-popover-content" style="display:none" \
-            ng-class="{ \
-              \'stackable-place-top\': !placement || placement == \'top\', \
-              \'stackable-place-right\': placement == \'right\', \
-              \'stackable-place-bottom\': placement == \'bottom\', \
-              \'stackable-place-left\': placement == \'left\', \
-              \'stackable-align-center\': !alignment || \
-                alignment == \'center\', \
-              \'stackable-align-top\': alignment == \'top\', \
-              \'stackable-align-right\': alignment == \'right\', \
-              \'stackable-align-bottom\': alignment == \'bottom\', \
-              \'stackable-align-left\': alignment == \'left\', \
-              \'stackable-no-arrow\': hideArrow}"> \
-            <div ng-if="!hideArrow" class="stackable-arrow"></div> \
-            <div ng-transclude></div> \
-          </div> \
+      <div><div stackable="state.show" class="stackable-popover"> \
+        <div class="stackable-popover-content stackable-fadein" \
+          style="display: none" \
+          ng-show="positioned" \
+          ng-class="{ \
+            \'stackable-place-top\': !placement || placement == \'top\', \
+            \'stackable-place-right\': placement == \'right\', \
+            \'stackable-place-bottom\': placement == \'bottom\', \
+            \'stackable-place-left\': placement == \'left\', \
+            \'stackable-align-center\': !alignment || \
+              alignment == \'center\', \
+            \'stackable-align-top\': alignment == \'top\', \
+            \'stackable-align-right\': alignment == \'right\', \
+            \'stackable-align-bottom\': alignment == \'bottom\', \
+            \'stackable-align-left\': alignment == \'left\', \
+            \'stackable-no-arrow\': hideArrow}"> \
+          <div ng-if="!hideArrow" class="stackable-arrow"></div> \
+          <div ng-transclude></div> \
         </div> \
-      </div>',
+      </div></div>',
     link: Link
   };
 
   function Link(scope, element) {
+    // popover not positioned yet
+    scope.positioned = false;
+
     var doc = angular.element(document);
     scope.$watch('state', function(state) {
       if(state) {
@@ -183,6 +186,7 @@ function stackablePopoverDirective() {
           doc.keyup(closeOnEscape).click(closeOnClick);
         } else {
           doc.off('keyup', closeOnEscape).off('click', closeOnClick);
+          scope.positioned = false;
         }
       }
 
@@ -223,7 +227,6 @@ function stackablePopoverDirective() {
     }
 
     function reposition(content) {
-      content.css('display', 'none');
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
 
@@ -275,7 +278,11 @@ function stackablePopoverDirective() {
       position.top += 'px';
       position.left += 'px';
       content.css(position);
-      content.css('display', '');
+      if(!scope.positioned) {
+        content.css('display', '');
+        scope.positioned = true;
+        scope.$digest();
+      }
     }
   }
 }

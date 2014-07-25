@@ -83,7 +83,7 @@ dialog[open] {
   overflow: hidden;
 }
 
-/* FIXME: animations for popovers disabled until can be fixed */
+/* Remove base animation for popovers */
 .stackable.stackable-popover.stackable-fadein,
 .stackable.stackable-popover.stackable-fadeout,
 .stackable.stackable-popover .stackable-content.stackable-fadein,
