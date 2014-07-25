@@ -142,7 +142,7 @@ function stackablePopoverDirective() {
       hideArrow: '=?stackableHideArrow',
       alignment: '@?stackableAlignment',
       placement: '@?stackablePlacement',
-      enableEscape: '=?stackableEnableEscape',
+      disableEscape: '=?stackableDisableEscape',
       disableBlurClose: '=?stackableDisableBlurClose'
     },
     restrict: 'A',
@@ -213,7 +213,7 @@ function stackablePopoverDirective() {
     }
 
     function closeOnEscape(e) {
-      if(scope.enableEscape && e.keyCode === 27) {
+      if(!scope.disableEscape && e.keyCode === 27) {
         e.stopPropagation();
         scope.state.show = false;
         scope.$apply();
