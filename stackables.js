@@ -13,7 +13,7 @@ var module = angular.module('stackables', []);
 
 module.directive({stackable: stackableDirective});
 module.directive({stackableCancel: stackableCancelDirective});
-module.directive({stackablePopover: ['$compile', stackablePopoverDirective]});
+module.directive({stackablePopover: stackablePopoverDirective});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
 function stackableDirective() {
@@ -135,7 +135,7 @@ function stackableCancelDirective() {
   };
 }
 
-function stackablePopoverDirective($compile) {
+function stackablePopoverDirective() {
   return {
     scope: {
       state: '=stackablePopover',
@@ -148,13 +148,8 @@ function stackablePopoverDirective($compile) {
     restrict: 'A',
     replace: true,
     transclude: true,
-    template: '<div style="display:none"></div>',
-    compile: Compile
-  };
-
-  function Compile(tElement, tAttrs, transcludeFn) {
-    return function(scope, element) {
-      var template = ' \
+    template: ' \
+      <div> \
         <div stackable="state.show" class="stackable-popover"> \
           <div class="stackable-popover-content" style="display:none" \
             ng-class="{ \
@@ -172,16 +167,18 @@ function stackablePopoverDirective($compile) {
             <div ng-if="!hideArrow" class="stackable-arrow"></div> \
             <div ng-transclude></div> \
           </div> \
-        </div>';
-      var popover = angular.element(template);
-      $compile(popover, transcludeFn)(scope);
-      angular.element('body').append(popover);
+        </div> \
+      </div>',
+    compile: Compile
+  };
 
+  function Compile(tElement, tAttrs, transcludeFn) {
+    return function(scope, element) {
       // whenever state changes, schedule repositioning
       scope.$watch('state', function() {
         setTimeout(function() {
           // only reposition if content is shown
-          var content = popover.find('.stackable-popover-content');
+          var content = element.find('.stackable-popover-content');
           if(!content.length) {
             return;
           }
@@ -219,8 +216,8 @@ function stackablePopoverDirective($compile) {
 
       function reposition(content) {
         content.css('display', 'none');
-        var width = content.outerWidth(true);
-        var height = content.outerHeight(true);
+        var width = content.outerWidth(false);
+        var height = content.outerHeight(false);
 
         // position popover content
         var position = {top: 0, left: 0};
