@@ -311,10 +311,11 @@ function stackableTriggerDirective($parse) {
       angular.element(window).off('resize', resized);
     });
 
-    // add/remove toggle classes when state.show changes
+    // update state and add/remove toggle classes when state.show changes
     scope.$watch(function() {
       return state.show;
     }, function(value) {
+      updateState(state);
       if(toggleClasses) {
         if(value === true) {
           element.addClass(toggleClasses);
