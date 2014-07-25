@@ -270,6 +270,7 @@ dialog[open] {
 }
 
 .stackable-menu {
+  min-width: 160px;
   margin: 0;
   padding: 5px 0;
   font-size: 14px;
