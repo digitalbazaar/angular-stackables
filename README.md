@@ -87,13 +87,11 @@ module.directive({
     stackable-placement="bottom"
     stackable-alignment="right"
     stackable-enable-escape="true">
-    <div class="stackable-popover-body">
-      <ul class="unstyled">
-        <li>
-          <a href="#">Menu Item</a>
-        </li>
-      </ul>
-    </div>
+    <ul class="stackable-menu">
+      <li>
+        <a href="#">Menu Item</a>
+      </li>
+    </ul>
   </div>
 </div>
 ```
