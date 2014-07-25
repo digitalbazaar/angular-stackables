@@ -362,12 +362,15 @@ function stackableTriggerDirective($parse) {
     function initState(expr) {
       var get = $parse(expr);
       var set = get.assign || angular.noop;
-      state = get(scope) || {};
+      state = get(scope);
+      if(!state) {
+        state = {};
+        set(scope, state);
+      }
       if(!('show' in state)) {
         state.show = false;
       }
       updateState(state);
-      set(scope, state);
     }
 
     function updateState(state) {
