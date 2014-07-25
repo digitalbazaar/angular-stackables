@@ -282,6 +282,8 @@ dialog[open] {
   font-size: 14px;
   font-weight: normal;
   line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
   background-color: #f7f7f7;
   border-bottom: 1px solid #ebebeb;
   -webkit-border-radius: 5px 5px 0 0;
