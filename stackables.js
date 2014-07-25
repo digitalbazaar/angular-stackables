@@ -169,107 +169,105 @@ function stackablePopoverDirective() {
           </div> \
         </div> \
       </div>',
-    compile: Compile
+    link: Link
   };
 
-  function Compile(tElement, tAttrs, transcludeFn) {
-    return function(scope, element) {
-      // whenever state changes, schedule repositioning
-      scope.$watch('state', function() {
-        setTimeout(function() {
-          // only reposition if content is shown
-          var content = element.find('.stackable-popover-content');
-          if(!content.length) {
-            return;
-          }
-          reposition(content);
-        });
-      }, true);
-
-      // close when pressing escape anywhere or clicking away
-      angular.element(document)
-        .on('keyup', closeOnEscape)
-        .on('click', closeOnClick);
-      scope.$on('$destroy', function() {
-        angular.element(document)
-          .off('keyup', closeOnEscape)
-          .off('click', closeOnClick);
+  function Link(scope, element) {
+    // whenever state changes, schedule repositioning
+    scope.$watch('state', function() {
+      setTimeout(function() {
+        // only reposition if content is shown
+        var content = element.find('.stackable-popover-content');
+        if(!content.length) {
+          return;
+        }
+        reposition(content);
       });
+    }, true);
 
-      function closeOnClick(e) {
-        // close if target is not the trigger and is not in the popover
-        var target = angular.element(e.target);
-        var trigger = target.data('stackable-state');
-        if(scope.state !== trigger && target.closest(element).length === 0) {
-          scope.state.show = false;
-          scope.$apply();
-        }
+    // close when pressing escape anywhere or clicking away
+    angular.element(document)
+      .on('keyup', closeOnEscape)
+      .on('click', closeOnClick);
+    scope.$on('$destroy', function() {
+      angular.element(document)
+        .off('keyup', closeOnEscape)
+        .off('click', closeOnClick);
+    });
+
+    function closeOnClick(e) {
+      // close if target is not the trigger and is not in the popover
+      var target = angular.element(e.target);
+      var trigger = target.data('stackable-state');
+      if(scope.state !== trigger && target.closest(element).length === 0) {
+        scope.state.show = false;
+        scope.$apply();
       }
+    }
 
-      function closeOnEscape(e) {
-        if(scope.enableEscape && e.keyCode === 27) {
-          e.stopPropagation();
-          scope.state.show = false;
-          scope.$apply();
-        }
+    function closeOnEscape(e) {
+      if(scope.enableEscape && e.keyCode === 27) {
+        e.stopPropagation();
+        scope.state.show = false;
+        scope.$apply();
       }
+    }
 
-      function reposition(content) {
-        content.css('display', 'none');
-        var width = content.outerWidth(false);
-        var height = content.outerHeight(false);
+    function reposition(content) {
+      content.css('display', 'none');
+      var width = content.outerWidth(false);
+      var height = content.outerHeight(false);
 
-        // position popover content
-        var position = {top: 0, left: 0};
-        var alignment = scope.alignment || 'center';
-        var placement = scope.placement || 'top';
-        if(placement === 'top' || placement === 'bottom') {
-          // treat invalid 'top' or 'bottom' as 'center'
-          if(['center', 'top', 'bottom'].indexOf(alignment) !== -1) {
-            var triggerCenterX = (scope.state.position.left +
-              scope.state.position.width / 2);
-            position.left = triggerCenterX - width / 2;
-          } else if(alignment === 'left') {
-            position.left = scope.state.position.left;
-          } else {
-            // alignment 'right'
-            position.left = (scope.state.position.left +
-              scope.state.position.width - width);
-          }
-          position.top = scope.state.position.top;
-          if(placement === 'top') {
-            position.top -= height;
-          } else {
-            position.top += scope.state.position.height;
-          }
-        } else {
-          // else placement is 'left' or 'right'
-
-          // treat invalid 'left' or 'right' as 'center'
-          if(['center', 'left', 'right'].indexOf(alignment) !== -1) {
-            var triggerCenterY = (scope.state.position.top +
-              scope.state.position.height / 2);
-            position.top = triggerCenterY - height / 2;
-          } else if(alignment === 'top') {
-            position.top = scope.state.position.top;
-          } else {
-            // alignment 'bottom'
-            position.top = (scope.state.position.top +
-              scope.state.position.height - height);
-          }
+      // position popover content
+      var position = {top: 0, left: 0};
+      var alignment = scope.alignment || 'center';
+      var placement = scope.placement || 'top';
+      if(placement === 'top' || placement === 'bottom') {
+        // treat invalid 'top' or 'bottom' as 'center'
+        if(['center', 'top', 'bottom'].indexOf(alignment) !== -1) {
+          var triggerCenterX = (scope.state.position.left +
+            scope.state.position.width / 2);
+          position.left = triggerCenterX - width / 2;
+        } else if(alignment === 'left') {
           position.left = scope.state.position.left;
-          if(placement === 'left') {
-            position.left -= width;
-          } else {
-            position.left += scope.state.position.width;
-          }
+        } else {
+          // alignment 'right'
+          position.left = (scope.state.position.left +
+            scope.state.position.width - width);
         }
-        position.top += 'px';
-        position.left += 'px';
-        content.css(position);
-        content.css('display', '');
+        position.top = scope.state.position.top;
+        if(placement === 'top') {
+          position.top -= height;
+        } else {
+          position.top += scope.state.position.height;
+        }
+      } else {
+        // else placement is 'left' or 'right'
+
+        // treat invalid 'left' or 'right' as 'center'
+        if(['center', 'left', 'right'].indexOf(alignment) !== -1) {
+          var triggerCenterY = (scope.state.position.top +
+            scope.state.position.height / 2);
+          position.top = triggerCenterY - height / 2;
+        } else if(alignment === 'top') {
+          position.top = scope.state.position.top;
+        } else {
+          // alignment 'bottom'
+          position.top = (scope.state.position.top +
+            scope.state.position.height - height);
+        }
+        position.left = scope.state.position.left;
+        if(placement === 'left') {
+          position.left -= width;
+        } else {
+          position.left += scope.state.position.width;
+        }
       }
-    };
+      position.top += 'px';
+      position.left += 'px';
+      content.css(position);
+      content.css('display', '');
+    }
   }
 }
 
