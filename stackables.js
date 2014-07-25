@@ -201,9 +201,12 @@ function stackablePopoverDirective() {
     });
 
     function closeOnClick(e) {
-      // close if target is not in the popover
+      // close if target is not in the popover and trigger was not clicked
+      // (also clear trigger click status)
       var target = angular.element(e.target);
-      if(target.closest(element).length === 0) {
+      var triggerClicked = scope.state.triggerClicked;
+      scope.state.triggerClicked = false;
+      if(!triggerClicked && target.closest(element).length === 0) {
         scope.state.show = false;
         scope.$apply();
       }
@@ -309,8 +312,16 @@ function stackableTriggerDirective($parse) {
       });
     } else {
       // default to click
-      element.on('click', function(e) {
-        e.stopPropagation();
+      element.on('click', function() {
+        // clear any selection
+        if(document.selection && document.selection.empty) {
+          document.selection.empty();
+        } else if(window.getSelection) {
+          window.getSelection().removeAllRanges();
+        }
+
+        // indicate trigger was clicked
+        state.triggerClicked = true;
         state.show = !state.show;
         updateState(state);
         scope.$apply();
