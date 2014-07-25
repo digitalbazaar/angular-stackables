@@ -173,8 +173,18 @@ function stackablePopoverDirective() {
   };
 
   function Link(scope, element) {
-    // whenever state changes, schedule repositioning
-    scope.$watch('state', function() {
+    var doc = angular.element(document);
+    scope.$watch('state', function(state) {
+      if(state) {
+        if(state.show) {
+          // close when pressing escape anywhere or clicking away
+          doc.keyup(closeOnEscape).click(closeOnClick);
+        } else {
+          doc.off('keyup', closeOnEscape).off('click', closeOnClick);
+        }
+      }
+
+      // schedule repositioning
       setTimeout(function() {
         // only reposition if content is shown
         var content = element.find('.stackable-popover-content');
@@ -185,21 +195,15 @@ function stackablePopoverDirective() {
       });
     }, true);
 
-    // close when pressing escape anywhere or clicking away
-    angular.element(document)
-      .on('keyup', closeOnEscape)
-      .on('click', closeOnClick);
+    // clean up any remaining handlers
     scope.$on('$destroy', function() {
-      angular.element(document)
-        .off('keyup', closeOnEscape)
-        .off('click', closeOnClick);
+      doc.off('keyup', closeOnEscape).off('click', closeOnClick);
     });
 
     function closeOnClick(e) {
-      // close if target is not the trigger and is not in the popover
+      // close if target is not in the popover
       var target = angular.element(e.target);
-      var trigger = target.data('stackable-state');
-      if(scope.state !== trigger && target.closest(element).length === 0) {
+      if(target.closest(element).length === 0) {
         scope.state.show = false;
         scope.$apply();
       }
@@ -305,7 +309,8 @@ function stackableTriggerDirective($parse) {
       });
     } else {
       // default to click
-      element.on('click', function() {
+      element.on('click', function(e) {
+        e.stopPropagation();
         state.show = !state.show;
         updateState(state);
         scope.$apply();
@@ -326,7 +331,6 @@ function stackableTriggerDirective($parse) {
       }
       updateState(state);
       set(scope, state);
-      element.data('stackable-state', state);
     }
 
     function updateState(state) {
