@@ -29,7 +29,6 @@ dialog[open] {
   height: -moz-fit-content;
   height: -webkit-fit-content;
   height: fit-content;
-  z-index: 1050;
   border: 0;
   background: transparent;
 }
@@ -68,10 +67,9 @@ dialog[open] {
   overflow: hidden;
 }
 
-/* Position stackable content above stackable container */
+/* Stackable content parent is static to allow child absolute positioning */
 .stackable-content {
   position: static;
-  z-index: 1060;
 }
 
 /* Override this to change backdrop w/HTML5 dialog and polyfill */
