@@ -58,11 +58,11 @@ module.directive({
 
 ```html
 <div ng-controller="TestController as test">
-  <a class="btn"
+  <button
     stackable-trigger="test.popoverState"
     stackable-toggle="'active'">
     <i class="caret"></i>
-  </a>
+  </button>
 
   <div stackable-popover="test.popoverState"
     stackable-placement="bottom"
@@ -80,9 +80,9 @@ module.directive({
 
 ```html
 <div ng-controller="TestController as test">
-  <a class="btn" stackable-trigger="test.menuState">
+  <button stackable-trigger="test.menuState">
     <i class="caret"></i>
-  </a>
+  </button>
 
   <div stackable-popover="test.menuState"
     stackable-hide-arrow="true"
