@@ -30,9 +30,11 @@ function stackableDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable" ng-class="{\'stackable-modal\': modal}" \
+      <dialog class="stackable stackable-fadein stackable-fadeout" \
+        ng-class="{\'stackable-modal\': modal}" \
         ng-show="show"> \
-        <div ng-if="show || persist" class="stackable-content"> \
+        <div class="stackable-content stackable-fadein stackable-fadeout" \
+          ng-if="show || persist"> \
           <div ng-transclude></div> \
         </div> \
       </dialog>',
