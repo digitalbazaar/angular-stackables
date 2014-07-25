@@ -274,5 +274,6 @@ dialog[open] {
 }
 
 .stackable-popover-body ul.unstyled {
+  white-space: nowrap;
   margin-bottom: 0;
 }
