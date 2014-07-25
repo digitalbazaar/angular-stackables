@@ -287,15 +287,32 @@ function stackableTriggerDirective($parse) {
   function Link(scope, element, attrs) {
     // track stackable state
     var state;
+    var toggleClasses = '';
     initState(attrs.stackableTrigger);
     attrs.$observe('stackableTrigger', function(value) {
       initState(value);
+    });
+    attrs.$observe('stackableToggle', function(value) {
+      toggleClasses = $parse(value)(scope);
     });
 
     // update element position when window resized
     angular.element(window).resize(resized);
     scope.$on('$destroy', function() {
       angular.element(window).off('resize', resized);
+    });
+
+    // add/remove toggle classes when state.show changes
+    scope.$watch(function() {
+      return state.show;
+    }, function(value) {
+      if(toggleClasses) {
+        if(value === true) {
+          element.addClass(toggleClasses);
+        } else {
+          element.removeClass(toggleClasses);
+        }
+      }
     });
 
     var toggleEvent = attrs.stackableToggle || 'click';

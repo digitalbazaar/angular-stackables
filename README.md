@@ -58,7 +58,9 @@ module.directive({
 
 ```html
 <div ng-controller="TestController as test">
-  <a class="btn" stackable-trigger="test.popoverState">
+  <a class="btn"
+    stackable-trigger="test.popoverState"
+    stackable-toggle="'active'">
     <i class="caret"></i>
   </a>
 
