@@ -170,8 +170,7 @@ function stackablePopoverDirective($compile) {
               \'stackable-align-left\': alignment == \'left\', \
               \'stackable-no-arrow\': hideArrow}"> \
             <div ng-if="!hideArrow" class="stackable-arrow"></div> \
-              <div ng-transclude></div> \
-            </div> \
+            <div ng-transclude></div> \
           </div> \
         </div>';
       var popover = angular.element(template);
