@@ -73,16 +73,17 @@ function stackableDirective() {
       dialogPolyfill.registerDialog(dialog);
     }
 
-    dialog.addEventListener('cancel', function(e) {
+    var cancelListener = function(e) {
       if(!!scope.disableEscape) {
         e.preventDefault();
       } else {
         scope.stackable.error = 'canceled';
         scope.stackable.result = null;
       }
-    });
+    };
+    dialog.addEventListener('cancel', cancelListener);
 
-    dialog.addEventListener('close', function(e) {
+    var closeListener = function(e) {
       e.stopPropagation();
       scope.show = open = false;
       var count = body.data('stackables') - 1;
@@ -97,7 +98,8 @@ function stackableDirective() {
           result: scope.stackable.result
         });
       }
-    });
+    };
+    dialog.addEventListener('close', closeListener);
 
     scope.$watch('show', function(value) {
       if(value) {
@@ -121,6 +123,11 @@ function stackableDirective() {
         });
         open = false;
       }
+    });
+
+    scope.$on('$destroy', function() {
+      dialog.removeEventListener(cancelListener);
+      dialog.removeEventListener(closeListener);
     });
   }
 }
