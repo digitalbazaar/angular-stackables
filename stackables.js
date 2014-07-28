@@ -377,7 +377,6 @@ function stackableTriggerDirective($parse) {
         heightWithMargin: element.outerHeight(true),
         widthWithMargin: element.outerWidth(true)
       };
-      return state;
     }
   }
 }
