@@ -130,8 +130,15 @@ function stackableCancelDirective() {
     restrict: 'AC',
     require: '^stackable',
     link: function(scope, element, attrs, ctrl) {
-      element.on('click', function() {
+      var namespace = '.stackableCancelDirective';
+      element.on('click' + namespace, function() {
         ctrl.close('canceled', null);
+      });
+      scope.$on('$destroy', function() {
+        element.off(namespace);
+      });
+      element.on('$destroy' + namespace, function() {
+        element.off(namespace);
       });
     }
   };
@@ -317,9 +324,19 @@ function stackableTriggerDirective($parse) {
     });
 
     // update element position when window resized
-    angular.element(window).resize(resized);
+    var namespace = '.stackableTriggerDirective';
+    angular.element(window).on('resize' + namespace, function() {
+      updateState(state);
+      scope.$apply();
+    });
+
     scope.$on('$destroy', function() {
-      angular.element(window).off('resize', resized);
+      angular.element(window).off(namespace);
+      element.off(namespace);
+    });
+    element.on('$destroy' + namespace, function() {
+      angular.element(window).off(namespace);
+      element.off(namespace);
     });
 
     // update state and add/remove toggle classes when state.show changes
@@ -339,29 +356,24 @@ function stackableTriggerDirective($parse) {
     var toggleEvent = attrs.stackableToggle || 'click';
     if(toggleEvent === 'hover') {
       // show on enter, hide on leave
-      element.hover(function() {
+      element.on('mouseenter' + namespace, function() {
         state.show = true;
         updateState(state);
         scope.$apply();
-      }, function() {
+      }).on('mouseleave' + namespace, function() {
         state.show = false;
         updateState(state);
         scope.$apply();
       });
     } else {
       // default to click
-      element.on('click', function() {
+      element.on('click' + namespace, function() {
         // indicate trigger was clicked
         state.triggerClicked = true;
         state.show = !state.show;
         updateState(state);
         scope.$apply();
       });
-    }
-
-    function resized() {
-      updateState(state);
-      scope.$apply();
     }
 
     function initState(expr) {
