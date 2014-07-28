@@ -229,6 +229,8 @@ function stackablePopoverDirective() {
     function reposition(content) {
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
+      // check if content not yet sized
+      var hasSize = content.innerWidth() !== 0 && content.innerHeight() !== 0;
 
       // position popover content
       var position = {top: 0, left: 0};
@@ -277,9 +279,18 @@ function stackablePopoverDirective() {
       }
       position.top += 'px';
       position.left += 'px';
+
+       // if unsized, move content off screen
+      if(!hasSize) {
+        position.left = '-10000px';
+      }
       content.css(position);
       if(!scope.positioned) {
         content.css('display', '');
+        // only show if sized
+        if(hasSize) {
+          content.css('visibility', '');
+        }
         scope.positioned = true;
         scope.$digest();
       }
