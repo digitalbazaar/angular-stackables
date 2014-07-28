@@ -130,16 +130,17 @@ function stackableCancelDirective() {
     restrict: 'AC',
     require: '^stackable',
     link: function(scope, element, attrs, ctrl) {
-      var namespace = '.stackableCancelDirective';
-      element.on('click' + namespace, function() {
+      element.on('click', cancel);
+      scope.$on('$destroy', cleanup);
+      element.on('$destroy', cleanup);
+
+      function cancel() {
         ctrl.close('canceled', null);
-      });
-      scope.$on('$destroy', function() {
-        element.off(namespace);
-      });
-      element.on('$destroy' + namespace, function() {
-        element.off(namespace);
-      });
+      }
+
+      function cleanup() {
+        element.off('click', cancel).off('$destroy', cleanup);
+      }
     }
   };
 }
@@ -236,8 +237,6 @@ function stackablePopoverDirective() {
     function reposition(content) {
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
-      // check if content not yet sized
-      var hasSize = content.innerWidth() !== 0 && content.innerHeight() !== 0;
 
       // position popover content
       var position = {top: 0, left: 0};
@@ -286,18 +285,9 @@ function stackablePopoverDirective() {
       }
       position.top += 'px';
       position.left += 'px';
-
-       // if unsized, move content off screen
-      if(!hasSize) {
-        position.left = '-10000px';
-      }
       content.css(position);
       if(!scope.positioned) {
         content.css('display', '');
-        // only show if sized
-        if(hasSize) {
-          content.css('visibility', '');
-        }
         scope.positioned = true;
         scope.$digest();
       }
@@ -323,22 +313,6 @@ function stackableTriggerDirective($parse) {
       toggleClasses = $parse(value)(scope);
     });
 
-    // update element position when window resized
-    var namespace = '.stackableTriggerDirective';
-    angular.element(window).on('resize' + namespace, function() {
-      updateState(state);
-      scope.$apply();
-    });
-
-    scope.$on('$destroy', function() {
-      angular.element(window).off(namespace);
-      element.off(namespace);
-    });
-    element.on('$destroy' + namespace, function() {
-      angular.element(window).off(namespace);
-      element.off(namespace);
-    });
-
     // update state and add/remove toggle classes when state.show changes
     scope.$watch(function() {
       return state.show;
@@ -353,27 +327,56 @@ function stackableTriggerDirective($parse) {
       }
     });
 
+    // ensure event handlers are cleaned up
+    scope.$on('$destroy', cleanup);
+    element.on('$destroy', cleanup);
+
+    // update element position when window resized
+    angular.element(window).resize(resize);
+
     var toggleEvent = attrs.stackableToggle || 'click';
     if(toggleEvent === 'hover') {
       // show on enter, hide on leave
-      element.on('mouseenter' + namespace, function() {
-        state.show = true;
-        updateState(state);
-        scope.$apply();
-      }).on('mouseleave' + namespace, function() {
-        state.show = false;
-        updateState(state);
-        scope.$apply();
-      });
+      element.on('mouseenter', enter).on('mouseleave', leave);
     } else {
       // default to click
-      element.on('click' + namespace, function() {
-        // indicate trigger was clicked
-        state.triggerClicked = true;
-        state.show = !state.show;
-        updateState(state);
-        scope.$apply();
-      });
+      element.on('click', click);
+    }
+
+    function resize() {
+      updateState(state);
+      scope.$apply();
+    }
+
+    function enter() {
+      setVisible(true);
+    }
+
+    function leave() {
+      setVisible(false);
+    }
+
+    function setVisible(show) {
+      state.show = show;
+      updateState(state);
+      scope.$apply();
+    }
+
+    function click() {
+      // indicate trigger was clicked
+      state.triggerClicked = true;
+      state.show = !state.show;
+      updateState(state);
+      scope.$apply();
+    }
+
+    function cleanup() {
+      angular.element(window).off('resize', resize);
+      element
+        .off('mouseenter', enter)
+        .off('mouseleave', leave)
+        .off('click', click)
+        .off('$destroy', cleanup);
     }
 
     function initState(expr) {
@@ -400,6 +403,7 @@ function stackableTriggerDirective($parse) {
         heightWithMargin: element.outerHeight(true),
         widthWithMargin: element.outerWidth(true)
       };
+      return state;
     }
   }
 }
