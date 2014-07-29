@@ -168,8 +168,7 @@ function stackablePopoverDirective() {
     template: ' \
       <div><div stackable="state.show" class="stackable-popover"> \
         <div class="stackable-popover-content stackable-fadein" \
-          style="display: none" \
-          ng-show="positioned" \
+          style="display: none; opacity: 0" \
           ng-class="{ \
             \'stackable-place-top\': !placement || placement == \'top\', \
             \'stackable-place-right\': placement == \'right\', \
@@ -191,7 +190,7 @@ function stackablePopoverDirective() {
 
   function Link(scope, element) {
     // popover not positioned yet
-    scope.positioned = false;
+    var positioned = false;
 
     var doc = angular.element(document);
     scope.$watch('state', function(state) {
@@ -201,7 +200,7 @@ function stackablePopoverDirective() {
           doc.keyup(closeOnEscape).click(closeOnClick);
         } else {
           doc.off('keyup', closeOnEscape).off('click', closeOnClick);
-          scope.positioned = false;
+          positioned = false;
         }
       }
 
@@ -293,9 +292,9 @@ function stackablePopoverDirective() {
       position.top += 'px';
       position.left += 'px';
       content.css(position);
-      if(!scope.positioned) {
-        content.css('display', '');
-        scope.positioned = true;
+      if(!positioned) {
+        content.css({display: '', opacity: ''});
+        positioned = true;
         scope.$digest();
       }
     }
