@@ -67,7 +67,7 @@ dialog[open] {
   left: 0;
   width: auto;
   height: auto;
-  overflow: auto;
+  overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
 }
 /* Prevent scroll on body */
