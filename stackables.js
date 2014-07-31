@@ -13,122 +13,110 @@ var module = angular.module('stackables', []);
 
 module.directive({stackable: stackableDirective});
 module.directive({stackableCancel: stackableCancelDirective});
+module.directive({stackableModal: stackableModalDirective});
 module.directive({stackablePopover: stackablePopoverDirective});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
 function stackableDirective() {
   return {
-    scope: {
-      show: '=stackable',
-      modal: '=?stackableModal',
-      persist: '=?persistContent',
-      disableEscape: '=?stackableDisableEscape',
-      closing: '&?stackableClosing',
-      closed: '&?stackableClosed'
-    },
     restrict: 'A',
-    replace: true,
-    transclude: true,
-    template: ' \
-      <dialog class="stackable stackable-fadein stackable-fadeout" \
-        ng-class="{\'stackable-modal\': modal}" \
-        ng-show="show"> \
-        <div class="stackable-content stackable-fadein stackable-fadeout" \
-          ng-if="show || persist"> \
-          <div ng-transclude></div> \
-        </div> \
-      </dialog>',
-    controller: ['$scope', Controller],
-    link: Link
+    controller: Controller
   };
 
-  function Controller($scope) {
+  function Controller() {
     var self = this;
-    var stackable = $scope.stackable = self;
+
+    // link the dialog element
+    self.link = function(scope, element) {
+      self.scope = scope;
+      scope.stackable = self;
+
+      var open = false;
+      var body = angular.element('body');
+      var dialog = element[0];
+
+      // move dialog to body to simpify z-indexing
+      body.append(dialog);
+
+      // use polyfill if necessary
+      if(!dialog.showModal && typeof dialogPolyfill !== 'undefined') {
+        dialogPolyfill.registerDialog(dialog);
+      }
+
+      var cancelListener = function(e) {
+        if(!!scope.disableEscape) {
+          e.preventDefault();
+        } else {
+          scope.stackable.error = 'canceled';
+          scope.stackable.result = null;
+        }
+      };
+      dialog.addEventListener('cancel', cancelListener);
+
+      var closeListener = function(e) {
+        e.stopPropagation();
+        scope.show = open = false;
+        var count = body.data('stackables') - 1;
+        body.data('stackables', count);
+        if(count === 0) {
+          body.removeClass('stackable-modal-open');
+        }
+        scope.$apply();
+        if(scope.closed) {
+          scope.closed.call(scope.$parent, {
+            err: scope.stackable.error,
+            result: scope.stackable.result
+          });
+        }
+      };
+      dialog.addEventListener('close', closeListener);
+
+      scope.$watch('show', function(value) {
+        if(value) {
+          if(!open) {
+            if(!!scope.modal) {
+              dialog.showModal();
+              body.addClass('stackable-modal-open');
+            } else {
+              dialog.show();
+            }
+            open = true;
+            scope.stackable.error = scope.stackable.result = undefined;
+            var count = body.data('stackables') || 0;
+            body.data('stackables', count + 1);
+          }
+        } else if(open) {
+          // schedule dialog close to avoid $digest already in progress
+          // as 'close' event handler may be called from here or externally
+          setTimeout(function() {
+            dialog.close();
+          });
+          open = false;
+        }
+      });
+
+      scope.$on('$destroy', function() {
+        dialog.removeEventListener(cancelListener);
+        dialog.removeEventListener(closeListener);
+      });
+    };
 
     // close the stackable unless 'closing' callback aborts
     self.close = function(err, result) {
-      var closing = $scope.closing || angular.noop;
-      var shouldClose = closing.call($scope.$parent, {
+      var closing = self.scope.closing || angular.noop;
+      var shouldClose = closing.call(self.scope.$parent, {
         err: err,
         result: result
       });
       Promise.resolve(shouldClose).then(function() {
         if(shouldClose !== false) {
-          stackable.error = err;
-          stackable.result = result;
-          $scope.show = false;
-          $scope.$apply();
+          self.error = err;
+          self.result = result;
+          self.scope.show = false;
+          self.scope.$apply();
         }
       });
     };
-  }
-
-  function Link(scope, element) {
-    var open = false;
-    var body = angular.element('body');
-    var dialog = element[0];
-    // use polyfill if necessary
-    if(!dialog.showModal && typeof dialogPolyfill !== 'undefined') {
-      dialogPolyfill.registerDialog(dialog);
-    }
-
-    var cancelListener = function(e) {
-      if(!!scope.disableEscape) {
-        e.preventDefault();
-      } else {
-        scope.stackable.error = 'canceled';
-        scope.stackable.result = null;
-      }
-    };
-    dialog.addEventListener('cancel', cancelListener);
-
-    var closeListener = function(e) {
-      e.stopPropagation();
-      scope.show = open = false;
-      var count = body.data('stackables') - 1;
-      body.data('stackables', count);
-      if(count === 0) {
-        body.removeClass('stackable-modal-open');
-      }
-      scope.$apply();
-      if(scope.closed) {
-        scope.closed.call(scope.$parent, {
-          err: scope.stackable.error,
-          result: scope.stackable.result
-        });
-      }
-    };
-    dialog.addEventListener('close', closeListener);
-
-    scope.$watch('show', function(value) {
-      if(value) {
-        if(!open) {
-          if(!!scope.modal) {
-            dialog.showModal();
-            body.addClass('stackable-modal-open');
-          } else {
-            dialog.show();
-          }
-          open = true;
-          scope.stackable.error = scope.stackable.result = undefined;
-          var count = body.data('stackables') || 0;
-          body.data('stackables', count + 1);
-        }
-      } else if(open) {
-        // schedule dialog close to avoid $digest already in progress
-        // as 'close' event handler may be called from here or externally
-        setTimeout(function() {
-          dialog.close();
-        });
-        open = false;
-      }
-    });
-
-    scope.$on('$destroy', function() {
-      dialog.removeEventListener(cancelListener);
-      dialog.removeEventListener(closeListener);
-    });
   }
 }
 
@@ -152,49 +140,88 @@ function stackableCancelDirective() {
   };
 }
 
-function stackablePopoverDirective() {
+function stackableModalDirective() {
   return {
+    require: 'stackable',
     scope: {
-      state: '=stackablePopover',
-      hideArrow: '=?stackableHideArrow',
-      alignment: '@?stackableAlignment',
-      placement: '@?stackablePlacement',
+      closed: '&?stackableClosed',
+      closing: '&?stackableClosing',
       disableEscape: '=?stackableDisableEscape',
-      disableBlurClose: '=?stackableDisableBlurClose'
+      persist: '=?persistContent',
+      show: '=stackable'
     },
-    restrict: 'A',
+    restrict: 'E',
     replace: true,
     transclude: true,
     template: ' \
-      <div><div stackable="state.show" class="stackable-popover"> \
-        <div class="stackable-popover-content stackable-fadein" \
-          style="display: none; opacity: 0" \
-          ng-class="{ \
-            \'stackable-place-top\': !placement || placement == \'top\', \
-            \'stackable-place-right\': placement == \'right\', \
-            \'stackable-place-bottom\': placement == \'bottom\', \
-            \'stackable-place-left\': placement == \'left\', \
-            \'stackable-align-center\': !alignment || \
-              alignment == \'center\', \
-            \'stackable-align-top\': alignment == \'top\', \
-            \'stackable-align-right\': alignment == \'right\', \
-            \'stackable-align-bottom\': alignment == \'bottom\', \
-            \'stackable-align-left\': alignment == \'left\', \
-            \'stackable-no-arrow\': hideArrow}"> \
-          <div ng-if="!hideArrow" class="stackable-arrow"></div> \
+      <dialog class="stackable stackable-modal \
+        stackable-fadein stackable-fadeout" ng-show="show"> \
+        <div class="stackable-content stackable-fadein stackable-fadeout" \
+          ng-if="show || persist"> \
           <div ng-transclude></div> \
         </div> \
-      </div></div>',
+      </dialog>',
+    link: function(scope, element, attrs, ctrl) {
+      // link stackable dialog
+      ctrl.link(scope, element);
+      scope.modal = true;
+    }
+  };
+}
+
+function stackablePopoverDirective() {
+  return {
+    require: 'stackable',
+    scope: {
+      alignment: '@?stackableAlignment',
+      disableBlurClose: '=?stackableDisableBlurClose',
+      disableEscape: '=?stackableDisableEscape',
+      hideArrow: '=?stackableHideArrow',
+      persist: '=?persistContent',
+      placement: '@?stackablePlacement',
+      state: '=stackable'
+    },
+    restrict: 'E',
+    replace: true,
+    transclude: true,
+    template: ' \
+      <dialog class="stackable stackable-popover \
+        stackable-fadein stackable-fadeout" ng-show="show"> \
+        <div class="stackable-content stackable-fadein stackable-fadeout" \
+          ng-if="show || persist"> \
+          <div class="stackable-popover-content stackable-fadein" \
+            style="display: none; opacity: 0" \
+            ng-class="{ \
+              \'stackable-place-top\': !placement || placement == \'top\', \
+              \'stackable-place-right\': placement == \'right\', \
+              \'stackable-place-bottom\': placement == \'bottom\', \
+              \'stackable-place-left\': placement == \'left\', \
+              \'stackable-align-center\': !alignment || \
+                alignment == \'center\', \
+              \'stackable-align-top\': alignment == \'top\', \
+              \'stackable-align-right\': alignment == \'right\', \
+              \'stackable-align-bottom\': alignment == \'bottom\', \
+              \'stackable-align-left\': alignment == \'left\', \
+              \'stackable-no-arrow\': hideArrow}"> \
+            <div ng-if="!hideArrow" class="stackable-arrow"></div> \
+            <div ng-transclude></div> \
+          </div> \
+        </div> \
+      </dialog>',
     link: Link
   };
 
-  function Link(scope, element) {
+  function Link(scope, element, attrs, ctrl) {
+    // link stackable dialog
+    ctrl.link(scope, element);
+
     // popover not positioned yet
     var positioned = false;
 
     var doc = angular.element(document);
     scope.$watch('state', function(state) {
       if(state) {
+        scope.show = state.show;
         if(state.show) {
           // close when pressing escape anywhere or clicking away
           doc.keyup(closeOnEscape).click(closeOnClick);

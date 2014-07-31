@@ -9,8 +9,7 @@ AngularJS stackable widgets (modals, popovers, menus) that use HTML5 dialog
 
 ```html
 <div ng-controller="TestController as test">
-  <div stackable="test.isOpen"
-    stackable-modal="true"
+  <stackable-modal stackable="test.isOpen"
     stackable-disable-escape="false"
     stackable-closing="test.modalClosing(err, result)"
     stackable-closed="test.modalClosed(err, result)">
@@ -19,7 +18,7 @@ AngularJS stackable widgets (modals, popovers, menus) that use HTML5 dialog
         <p>Test Dialog</p>
       </div>
     </div>
-  </div>
+  </stackable-modal>
 </div>
 ```
 
@@ -64,7 +63,7 @@ module.directive({
     <i class="caret"></i>
   </button>
 
-  <div stackable-popover="test.popoverState"
+  <stackable-popover stackable="test.popoverState"
     stackable-placement="bottom"
     stackable-alignment="center"
     stackable-enable-escape="true">
@@ -72,7 +71,7 @@ module.directive({
     <div class="stackable-popover-body">
       <p>Hello World</p>
     </div>
-  </div>
+  </stackable-popover>
 </div>
 ```
 
@@ -84,7 +83,7 @@ module.directive({
     <i class="caret"></i>
   </button>
 
-  <div stackable-popover="test.menuState"
+  <stackable-popover stackable="test.menuState"
     stackable-hide-arrow="true"
     stackable-placement="bottom"
     stackable-alignment="right"
@@ -94,6 +93,6 @@ module.directive({
         <a href="#">Menu Item</a>
       </li>
     </ul>
-  </div>
+  </stackable-popover>
 </div>
 ```
