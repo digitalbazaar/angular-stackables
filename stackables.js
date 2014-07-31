@@ -174,6 +174,8 @@ function stackablePopoverDirective() {
     require: 'stackable',
     scope: {
       alignment: '@?stackableAlignment',
+      closed: '&?stackableClosed',
+      closing: '&?stackableClosing',
       disableBlurClose: '=?stackableDisableBlurClose',
       disableEscape: '=?stackableDisableEscape',
       hideArrow: '=?stackableHideArrow',
