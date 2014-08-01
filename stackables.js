@@ -17,6 +17,10 @@ module.directive({stackableModal: stackableModalDirective});
 module.directive({stackablePopover: stackablePopoverDirective});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
+var usePolyfill = angular.element('<dialog></dialog>');
+usePolyfill = (!usePolyfill[0].showModal &&
+  typeof dialogPolyfill !== 'undefined');
+
 function stackableDirective() {
   return {
     restrict: 'A',
@@ -35,11 +39,28 @@ function stackableDirective() {
       var body = angular.element('body');
       var dialog = element[0];
 
-      // move dialog to body to simpify z-indexing
-      body.append(dialog);
+      // get z-index of parent dialog, if any
+      var parentDialog = element.parent().closest('dialog');
+      if(parentDialog.length > 0) {
+        var zIndex = parentDialog.css('z-index');
+        var zIndexInt = parseInt(zIndex, 10);
+        if(zIndexInt.toString() !== zIndex) {
+          zIndex = 0;
+        }
+        element.css({'z-index': ++zIndexInt});
+
+        // ensure child dialog is a direct descendant of parent (should work
+        // for both native modal <dialog> which will only show the child on top
+        // if it is not moved to the body and for polyfill which relies on
+        // z-index contexts)
+        parentDialog.append(dialog);
+      } else {
+        // no dialog parent; move dialog to body to simplify z-indexing
+        body.append(dialog);
+      }
 
       // use polyfill if necessary
-      if(!dialog.showModal && typeof dialogPolyfill !== 'undefined') {
+      if(usePolyfill) {
         dialogPolyfill.registerDialog(dialog);
       }
 
@@ -163,8 +184,8 @@ function stackableModalDirective() {
       </dialog>',
     link: function(scope, element, attrs, ctrl) {
       // link stackable dialog
-      ctrl.link(scope, element);
       scope.modal = true;
+      ctrl.link(scope, element);
     }
   };
 }
