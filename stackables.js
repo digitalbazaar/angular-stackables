@@ -117,8 +117,8 @@ function stackableDirective() {
       });
 
       scope.$on('$destroy', function() {
-        dialog.removeEventListener(cancelListener);
-        dialog.removeEventListener(closeListener);
+        dialog.removeEventListener('cancel', cancelListener);
+        dialog.removeEventListener('close', closeListener);
       });
     };
 
