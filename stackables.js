@@ -41,7 +41,11 @@ function stackableDirective() {
 
       // get z-index of parent dialog, if any
       var parentDialog = element.parent().closest('dialog');
-      if(parentDialog.length > 0) {
+      if(parentDialog.length === 0) {
+        // no dialog parent; move dialog to body to simplify z-indexing
+        body.append(dialog);
+      } else {
+        // ensure element is above parent dialog
         var zIndex = parentDialog.css('z-index');
         var zIndexInt = parseInt(zIndex, 10);
         if(zIndexInt.toString() !== zIndex) {
@@ -49,14 +53,14 @@ function stackableDirective() {
         }
         element.css({'z-index': ++zIndexInt});
 
-        // ensure child dialog is a direct descendant of parent (should work
-        // for both native modal <dialog> which will only show the child on top
-        // if it is not moved to the body and for polyfill which relies on
-        // z-index contexts)
-        parentDialog.append(dialog);
-      } else {
-        // no dialog parent; move dialog to body to simplify z-indexing
-        body.append(dialog);
+        // ensure child dialog is a direct descendant of parent for
+        // native modal <dialog> which will only show the dialog and
+        // its descendants
+        if(!usePolyfill) {
+          parentDialog.append(dialog);
+        } else {
+          body.append(dialog);
+        }
       }
 
       // use polyfill if necessary
