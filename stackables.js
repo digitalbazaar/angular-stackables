@@ -271,6 +271,13 @@ function stackablePopoverDirective() {
       });
     }, true);
 
+    // keep scope.state.show in-sync with show
+    scope.$watch('show', function(value) {
+      if(value !== undefined && scope.state) {
+        scope.state.show = value;
+      }
+    });
+
     // clean up any remaining handlers
     scope.$on('$destroy', function() {
       doc.off('keyup', closeOnEscape).off('click', closeOnClick);
@@ -365,7 +372,7 @@ function stackableTriggerDirective($parse) {
 
   function Link(scope, element, attrs) {
     // track stackable state
-    var state;
+    var state = {};
     var toggleClasses = '';
     initState(attrs.stackableTrigger);
     attrs.$observe('stackableTrigger', function(value) {
