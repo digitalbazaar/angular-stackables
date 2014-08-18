@@ -251,7 +251,9 @@ function stackablePopoverDirective() {
         scope.show = state.show;
         if(state.show) {
           // close when pressing escape anywhere or clicking away
-          doc.keyup(closeOnEscape).click(closeOnClick);
+          if(!positioned) {
+            doc.keyup(closeOnEscape).click(closeOnClick);
+          }
         } else {
           doc.off('keyup', closeOnEscape).off('click', closeOnClick);
           positioned = false;
@@ -379,11 +381,7 @@ function stackableTriggerDirective($parse) {
     }, function(value) {
       updateState(state);
       if(toggleClasses) {
-        if(value === true) {
-          element.addClass(toggleClasses);
-        } else {
-          element.removeClass(toggleClasses);
-        }
+        element.toggleClass(toggleClasses, !!value);
       }
     });
 
