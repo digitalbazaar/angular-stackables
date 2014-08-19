@@ -121,6 +121,13 @@ function stackableDirective() {
       });
 
       scope.$on('$destroy', function() {
+        // ensure dialog is closed
+        if(open) {
+          setTimeout(function() {
+            dialog.close();
+          });
+          open = false;
+        }
         dialog.removeEventListener('cancel', cancelListener);
         dialog.removeEventListener('close', closeListener);
       });
