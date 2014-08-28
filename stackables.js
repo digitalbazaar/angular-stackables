@@ -130,6 +130,7 @@ function stackableDirective() {
         }
         dialog.removeEventListener('cancel', cancelListener);
         dialog.removeEventListener('close', closeListener);
+        element.remove();
       });
     };
 
