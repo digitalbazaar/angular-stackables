@@ -1,0 +1,6 @@
+*.sw[nop]
+*~
+.project
+.settings
+TAGS
+npm-debug.log
