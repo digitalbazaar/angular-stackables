@@ -38,12 +38,13 @@ function stackableDirective() {
       var open = false;
       var body = angular.element('body');
       var dialog = element[0];
+      var parent;
 
       // get z-index of parent dialog, if any
       var parentDialog = element.parent().closest('dialog');
       if(parentDialog.length === 0) {
         // no dialog parent; move dialog to body to simplify z-indexing
-        body.append(dialog);
+        parent = body;
       } else {
         // ensure element is above parent dialog
         var zIndex = parentDialog.css('z-index');
@@ -57,9 +58,9 @@ function stackableDirective() {
         // native modal <dialog> which will only show the dialog and
         // its descendants
         if(!usePolyfill) {
-          parentDialog.append(dialog);
+          parent = parentDialog;
         } else {
-          body.append(dialog);
+          parent = body;
         }
       }
 
@@ -99,6 +100,7 @@ function stackableDirective() {
       scope.$watch('show', function(value) {
         if(value) {
           if(!open) {
+            parent.append(dialog);
             if(!!scope.modal) {
               dialog.showModal();
               body.addClass('stackable-modal-open');
@@ -115,6 +117,7 @@ function stackableDirective() {
           // as 'close' event handler may be called from here or externally
           setTimeout(function() {
             dialog.close();
+            dialog.remove();
           });
           open = false;
         }
@@ -125,6 +128,7 @@ function stackableDirective() {
         if(open) {
           setTimeout(function() {
             dialog.close();
+            dialog.remove();
           });
           open = false;
         }
