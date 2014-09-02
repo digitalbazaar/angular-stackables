@@ -63,6 +63,7 @@ function stackableDirective() {
           parent = body;
         }
       }
+      dialog.remove();
 
       // use polyfill if necessary
       if(usePolyfill) {
