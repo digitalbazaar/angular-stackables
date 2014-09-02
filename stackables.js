@@ -35,7 +35,7 @@ function stackableDirective() {
       self.scope = scope;
       scope.stackable = self;
 
-      var open = false;
+      self.isOpen = false;
       var body = angular.element('body');
       var dialog = element[0];
       var parent;
@@ -82,7 +82,7 @@ function stackableDirective() {
 
       var closeListener = function(e) {
         e.stopPropagation();
-        scope.show = open = false;
+        scope.show = self.isOpen = false;
         var count = body.data('stackables') - 1;
         body.data('stackables', count);
         if(count === 0) {
@@ -100,7 +100,7 @@ function stackableDirective() {
 
       scope.$watch('show', function(value) {
         if(value) {
-          if(!open) {
+          if(!self.isOpen) {
             parent.append(dialog);
             if(!!scope.modal) {
               dialog.showModal();
@@ -108,30 +108,30 @@ function stackableDirective() {
             } else {
               dialog.show();
             }
-            open = true;
+            self.isOpen = true;
             scope.stackable.error = scope.stackable.result = undefined;
             var count = body.data('stackables') || 0;
             body.data('stackables', count + 1);
           }
-        } else if(open) {
+        } else if(self.isOpen) {
           // schedule dialog close to avoid $digest already in progress
           // as 'close' event handler may be called from here or externally
           setTimeout(function() {
             dialog.close();
             dialog.remove();
           });
-          open = false;
+          self.isOpen = false;
         }
       });
 
       scope.$on('$destroy', function() {
         // ensure dialog is closed
-        if(open) {
+        if(self.isOpen) {
           setTimeout(function() {
             dialog.close();
             dialog.remove();
           });
-          open = false;
+          self.isOpen = false;
         }
         dialog.removeEventListener('cancel', cancelListener);
         dialog.removeEventListener('close', closeListener);
