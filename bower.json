@@ -1,6 +1,6 @@
 {
   "name": "angular-stackables",
-  "version": "0.0.26-dev",
+  "version": "0.0.26",
   "description": "AngularJS stackable widgets built on HTML5 dialog.",
   "authors": [
     "Digital Bazaar, Inc."
