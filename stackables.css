@@ -36,10 +36,10 @@ dialog[open] {
 
 /* Animation for showing/hiding stackable; requires ng-animate */
 .stackable-fadein, .stackable-fadeout {
-  -webkit-transition: opacity 250ms ease-in-out;
-  -moz-transition: opacity 250ms ease-in-out;
-  -o-transition: opacity 250ms ease-in-out;
-  transition: opacity 250ms ease-in-out;
+  -webkit-transition: opacity 200ms ease-in-out;
+  -moz-transition: opacity 200ms ease-in-out;
+  -o-transition: opacity 200ms ease-in-out;
+  transition: opacity 200ms ease-in-out;
 }
 
 .stackable-fadein.ng-hide-remove,
