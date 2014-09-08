@@ -88,12 +88,13 @@ function stackableDirective() {
         if(count === 0) {
           body.removeClass('stackable-modal-open');
         }
-        scope.$apply();
+        scope.$digest();
         if(scope.closed) {
           scope.closed.call(scope.$parent, {
             err: scope.stackable.error,
             result: scope.stackable.result
           });
+          scope.$apply();
         }
       };
       dialog.addEventListener('close', closeListener);
