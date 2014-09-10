@@ -8,7 +8,7 @@
   "license": "BSD",
   "main": ["stackables.js", "stackables.css"],
   "dependencies": {
-    "angular": "1.3.0-rc.0",
+    "angular": "1.3.0-rc.1",
     "dialog-polyfill": "0.2.0"
   },
   "ignore": [
