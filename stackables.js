@@ -32,7 +32,6 @@ function stackableDirective() {
 
     // link the dialog element
     self.link = function(scope, element) {
-      self.scope = scope;
       scope.stackable = self;
 
       self.isOpen = false;
@@ -138,24 +137,24 @@ function stackableDirective() {
         dialog.removeEventListener('close', closeListener);
         element.remove();
       });
-    };
 
-    // close the stackable unless 'closing' callback aborts
-    self.close = function(err, result) {
-      var closing = self.scope.closing || angular.noop;
-      var shouldClose = closing.call(self.scope.$parent, {
-        err: err,
-        result: result
-      });
-      Promise.resolve(shouldClose).then(function() {
-        if(shouldClose !== false) {
-          self.error = err;
-          self.result = result;
-          self.scope.show = false;
-          self.scope.$apply();
-        }
-      });
-    };
+      // close the stackable unless 'closing' callback aborts
+      self.close = function(err, result) {
+        var closing = scope.closing || angular.noop;
+        var shouldClose = closing.call(scope.$parent, {
+          err: err,
+          result: result
+        });
+        Promise.resolve(shouldClose).then(function() {
+          if(shouldClose !== false) {
+            self.error = err;
+            self.result = result;
+            scope.show = false;
+            scope.$apply();
+          }
+        });
+      };
+    }
   }
 }
 
@@ -259,8 +258,23 @@ function stackablePopoverDirective() {
     // popover not positioned yet
     var positioned = false;
 
+    // watch state to reposition popover
+    scope.$watch('state', watchState, true);
+
+    // keep scope.state.show in-sync with show
+    scope.$watch('show', function(value) {
+      if(value !== undefined && scope.state) {
+        scope.state.show = value;
+      }
+    });
+
+    // clean up any remaining handlers
+    scope.$on('$destroy', function() {
+      doc.off('keyup', closeOnEscape).off('click', closeOnClick);
+    });
+
     var doc = angular.element(document);
-    scope.$watch('state', function(state) {
+    function watchState(state) {
       if(state) {
         scope.show = state.show;
         if(state.show) {
@@ -275,27 +289,8 @@ function stackablePopoverDirective() {
       }
 
       // schedule repositioning
-      setTimeout(function() {
-        // only reposition if content is shown
-        var content = element.find('.stackable-popover-content');
-        if(!content.length) {
-          return;
-        }
-        reposition(content);
-      });
-    }, true);
-
-    // keep scope.state.show in-sync with show
-    scope.$watch('show', function(value) {
-      if(value !== undefined && scope.state) {
-        scope.state.show = value;
-      }
-    });
-
-    // clean up any remaining handlers
-    scope.$on('$destroy', function() {
-      doc.off('keyup', closeOnEscape).off('click', closeOnClick);
-    });
+      setTimeout(repositionIfShown);
+    }
 
     function closeOnClick(e) {
       // close if target is not in the popover and trigger was not clicked
@@ -315,6 +310,15 @@ function stackablePopoverDirective() {
         scope.state.show = false;
         scope.$apply();
       }
+    }
+
+    function repositionIfShown() {
+      // only reposition if content is shown
+      var content = element.find('.stackable-popover-content');
+      if(!content.length) {
+        return;
+      }
+      reposition(content);
     }
 
     function reposition(content) {
