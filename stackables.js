@@ -62,7 +62,9 @@ function stackableDirective() {
           parent = body;
         }
       }
-      dialog.remove();
+      if(dialog.parentNode) {
+        dialog.parentNode.removeChild(dialog);
+      }
 
       // use polyfill if necessary
       if(usePolyfill) {
@@ -118,7 +120,9 @@ function stackableDirective() {
           // as 'close' event handler may be called from here or externally
           setTimeout(function() {
             dialog.close();
-            dialog.remove();
+            if(dialog.parentNode) {
+              dialog.parentNode.removeChild(dialog);
+            }
           });
           self.isOpen = false;
         }
@@ -129,7 +133,9 @@ function stackableDirective() {
         if(self.isOpen) {
           setTimeout(function() {
             dialog.close();
-            dialog.remove();
+            if(dialog.parentNode) {
+              dialog.parentNode.removeChild(dialog);
+            }
           });
           self.isOpen = false;
         }
