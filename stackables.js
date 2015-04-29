@@ -198,9 +198,9 @@ function stackableModalDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable stackable-modal \
-        stackable-fadein stackable-fadeout" ng-show="show"> \
-        <div class="stackable-content stackable-fadein stackable-fadeout" \
+      <dialog class="stackable stackable-modal stackable-fadein" \
+        ng-show="show"> \
+        <div class="stackable-content stackable-fadein" \
           ng-if="show || persist"> \
           <div ng-transclude></div> \
         </div> \
@@ -231,10 +231,9 @@ function stackablePopoverDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable stackable-popover \
-        stackable-fadein stackable-fadeout" ng-show="show"> \
-        <div class="stackable-content stackable-fadein stackable-fadeout" \
-          ng-if="show || persist"> \
+      <dialog class="stackable stackable-popover" ng-show="show"> \
+        <div class="stackable-content" ng-if="show || persist" \
+          ng-animate-children> \
           <div class="stackable-popover-content stackable-fadein" \
             style="display: none; opacity: 0" \
             ng-class="{ \

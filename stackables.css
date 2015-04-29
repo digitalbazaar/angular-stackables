@@ -42,18 +42,18 @@ dialog[open] {
   transition: opacity 200ms ease-in-out;
 }
 
-.stackable-fadein.ng-hide-remove,
-.stackable-fadeout.ng-hide-add.ng-hide-add-active,
 .stackable-fadein.ng-enter,
-.stackable-fadeout.ng-leave.ng-leave-active {
+.stackable-fadein.ng-hide-remove,
+.stackable-fadeout.ng-leave.ng-leave-active,
+.stackable-fadeout.ng-hide-add.ng-hide-add-active {
   opacity: 0;
   display: block !important;
 }
 
-.stackable-fadeout.ng-hide-add,
+.stackable-fadein.ng-enter.ng-enter-active,
 .stackable-fadein.ng-hide-remove.ng-hide-remove-active,
 .stackable-fadeout.ng-leave,
-.stackable-fadein.ng-enter.ng-enter-active {
+.stackable-fadeout.ng-hide-add {
   opacity: 1;
   display: block !important;
 }
@@ -81,17 +81,6 @@ dialog[open] {
   width: auto;
   height: auto;
   overflow: hidden;
-}
-
-/* Remove base animation for popovers */
-.stackable.stackable-popover.stackable-fadein,
-.stackable.stackable-popover.stackable-fadeout,
-.stackable.stackable-popover .stackable-content.stackable-fadein,
-.stackable.stackable-popover .stackable-content.stackable-fadeout {
-  -webkit-transition: none;
-  -moz-transition: none;
-  -o-transition: none;
-  transition: none;
 }
 
 /* Stackable content parent is static to allow child absolute positioning */
