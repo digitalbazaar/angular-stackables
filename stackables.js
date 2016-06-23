@@ -84,11 +84,7 @@ function stackableDirective() {
       var closeListener = function(e) {
         e.stopPropagation();
         scope.show = self.isOpen = false;
-        var count = body.data('stackables') - 1;
-        body.data('stackables', count);
-        if(count === 0) {
-          body.removeClass('stackable-modal-open');
-        }
+        decreaseModalCount();
         scope.$digest();
         if(scope.closed) {
           scope.closed.call(scope.$parent, {
@@ -131,6 +127,9 @@ function stackableDirective() {
       scope.$on('$destroy', function() {
         // ensure dialog is closed
         if(self.isOpen) {
+          // the stackable count must be decremented here because the
+          // closeListener for this dialog was not executed
+          decreaseModalCount();
           setTimeout(function() {
             dialog.close();
             if(dialog.parentNode) {
@@ -160,6 +159,14 @@ function stackableDirective() {
           }
         });
       };
+
+      function decreaseModalCount() {
+        var count = body.data('stackables') - 1;
+        body.data('stackables', count);
+        if(count === 0) {
+          body.removeClass('stackable-modal-open');
+        }
+      }
     };
   }
 }
