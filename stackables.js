@@ -337,8 +337,24 @@ function stackablePopoverDirective() {
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
 
+      // calculate offset delta between content and its trigger element
+      // and any delta between content offset and position
+      var $content = angular.element(content);
+      content.css({
+        top: scope.state.position.top,
+        left: scope.state.position.left
+      });
+      var offset = $content.offset();
+      var position = $content.position();
+      var delta = {
+        top: (scope.state.position.top - offset.top) +
+          (offset.top - position.top),
+        left: (scope.state.position.left - offset.left) +
+          (offset.left - position.left)
+      };
+
       // position popover content
-      var position = {top: 0, left: 0};
+      position = {top: 0, left: 0};
       var alignment = scope.alignment || 'center';
       var placement = scope.placement || 'top';
       if(placement === 'top' || placement === 'bottom') {
@@ -382,8 +398,10 @@ function stackablePopoverDirective() {
           position.left += scope.state.position.width;
         }
       }
-      position.top += 'px';
-      position.left += 'px';
+
+      // apply final position
+      position.top = (position.top + delta.top) + 'px';
+      position.left = (position.left + delta.left) + 'px';
       content.css(position);
       if(!positioned) {
         content.css({display: '', opacity: ''});
