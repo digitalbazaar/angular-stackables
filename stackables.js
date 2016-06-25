@@ -288,6 +288,7 @@ function stackablePopoverDirective() {
     });
 
     var doc = angular.element(document);
+    var repositionId = null;
     function watchState(state) {
       if(state) {
         scope.show = state.show;
@@ -296,14 +297,14 @@ function stackablePopoverDirective() {
           if(!positioned) {
             doc.keyup(closeOnEscape).click(closeOnClick);
           }
+          // schedule repositioning
+          repositionId = setTimeout(repositionIfShown);
         } else {
           doc.off('keyup', closeOnEscape).off('click', closeOnClick);
           positioned = false;
+          clearTimeout(repositionId);
         }
       }
-
-      // schedule repositioning
-      setTimeout(repositionIfShown);
     }
 
     function closeOnClick(e) {
