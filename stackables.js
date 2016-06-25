@@ -9,6 +9,8 @@
 
 'use strict';
 
+function init(angular, dialogPolyfill) {
+
 var module = angular.module('stackables', []);
 
 module.directive({stackable: stackableDirective});
@@ -518,6 +520,21 @@ function stackableTriggerDirective($parse) {
       };
     }
   }
+}
+
+} // end init() definition
+
+if(typeof define === 'function' && 'amd' in define) {
+  // AMD support
+  define(['angular', 'dialog-polyfill'], function(angular, dialogPolyfill) {
+    init(angular, dialogPolyfill);
+  });
+} else if(typeof module === 'object' && typeof module.exports === 'object') {
+  // CommonJS support
+  init(require('angular'), require('dialog-polyfill'));
+} else {
+  // all others
+  init(window.angular, window.dialogPolyfill);
 }
 
 })();

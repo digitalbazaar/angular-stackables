@@ -4,6 +4,10 @@
 - Fix popover positioning by removing delta between
   popover content and its trigger element.
 
+### Changed
+- Update dialog-polyfill dependency to 0.4.3. This also includes adding
+  AMD/CommonJS support, by necessity.
+
 ## 1.0.1 - 2016-06-23
 
 ### Fixed

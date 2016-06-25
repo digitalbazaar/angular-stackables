@@ -2,6 +2,7 @@
   "name": "angular-stackables",
   "version": "1.0.2-dev",
   "description": "AngularJS stackable widgets built on HTML5 dialog.",
+  "moduleType": "amd",
   "authors": [
     "Digital Bazaar, Inc."
   ],
@@ -9,7 +10,7 @@
   "main": ["stackables.js", "stackables.css"],
   "dependencies": {
     "angular": "^1.3.0",
-    "dialog-polyfill": "0.2.0"
+    "dialog-polyfill": "^0.4.3"
   },
   "ignore": [
     "node_modules",
