@@ -245,6 +245,7 @@ function stackablePopoverDirective() {
           ng-animate-children> \
           <div class="stackable-popover-content stackable-fadein" \
             style="display: none; opacity: 0" \
+            ng-style="{\'z-index\': zIndex}" \
             ng-class="{ \
               \'stackable-place-top\': !placement || placement == \'top\', \
               \'stackable-place-right\': placement == \'right\', \
@@ -340,12 +341,21 @@ function stackablePopoverDirective() {
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
 
+      // ensure z-index is above parent dialog
+      var parentDialog = content.parent().closest('dialog');
+      var zIndex = parentDialog.css('z-index');
+      var zIndexInt = parseInt(zIndex, 10);
+      if(zIndexInt.toString() !== zIndex) {
+        zIndex = 0;
+      }
+
       // calculate offset delta between content and its trigger element
       // and any delta between content offset and position
       var $content = angular.element(content);
       content.css({
         top: scope.state.position.top,
-        left: scope.state.position.left
+        left: scope.state.position.left,
+        'z-index': zIndex + 1
       });
       var offset = $content.offset();
       var position = $content.position();

@@ -6,6 +6,7 @@
 - Fix popover positioning bug by canceling reposition
   scheduling and only scheduling a reposition when
   the popover is shown.
+- Fix popover z-index bug when using polyfill.
 
 ### Changed
 - Update dialog-polyfill dependency to 0.4.3. This also includes adding

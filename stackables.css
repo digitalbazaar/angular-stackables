@@ -31,7 +31,6 @@ dialog[open] {
   height: fit-content;
   border: 0;
   background: transparent;
-  z-index: 10000;
 }
 
 /* Animation for showing/hiding stackable; requires ng-animate */
@@ -114,7 +113,6 @@ dialog[open] {
   -webkit-background-clip: padding-box;
   -moz-background-clip: padding-box;
   background-clip: padding-box;
-  z-index: 10001;
 }
 
 /* Bootstrap-based popovers */
@@ -138,7 +136,6 @@ dialog[open] {
   -webkit-background-clip: padding-box;
   -moz-background-clip: padding-box;
   background-clip: padding-box;
-  z-index: 10001;
 }
 
 .stackable-popover-content.stackable-place-top {
