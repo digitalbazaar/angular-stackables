@@ -343,7 +343,12 @@ function stackablePopoverDirective() {
 
       // ensure z-index is above parent dialog
       var parentDialog = content.parent().closest('dialog');
-      var zIndex = parentDialog.css('z-index');
+      // JQuery in WebKit browsers does not give back a z-index value if
+      // an element's position is not explicitly set. Retrieve it from
+      // the style instead.
+      // https://bugs.jquery.com/ticket/9667
+      //var zIndex = parentDialog.css('z-index');
+      var zIndex = parentDialog.prop('style')['zIndex']
       var zIndexInt = parseInt(zIndex, 10);
       if(zIndexInt.toString() !== zIndex) {
         zIndex = 0;
