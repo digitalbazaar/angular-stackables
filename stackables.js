@@ -520,9 +520,17 @@ function stackableTriggerDirective($parse) {
     }
 
     function updateState(state) {
+      // If we're using the dialog polyfil, .offset() will calculate the
+      // correct trigger position for us. If we aren't, .offset() needs
+      // to be subtracted from the document's scroll position. This
+      // fixes an issue we have with chrome, which doesn't use the polyfill.
       var offset = element.offset();
+      var scrollOffset = 0;
+      if(!usePolyfill) {
+        scrollOffset = angular.element(document).scrollTop();
+      }
       state.position = {
-        top: offset.top,
+        top: offset.top - scrollOffset,
         left: offset.left,
         height: element.outerHeight(false),
         width: element.outerWidth(false),
