@@ -1,5 +1,7 @@
 # angular-stackables ChangeLog
 
+## 1.0.2 - 2016-06-28
+
 ### Fixed
 - Fix popover positioning by removing delta between
   popover content and its trigger element.
