@@ -348,7 +348,7 @@ function stackablePopoverDirective() {
       // the style instead.
       // https://bugs.jquery.com/ticket/9667
       //var zIndex = parentDialog.css('z-index');
-      var zIndex = parentDialog.prop('style')['zIndex']
+      var zIndex = parentDialog.prop('style')['zIndex'];
       var zIndexInt = parseInt(zIndex, 10);
       if(zIndexInt.toString() !== zIndex) {
         zIndex = 0;
@@ -525,7 +525,7 @@ function stackableTriggerDirective($parse) {
     }
 
     function updateState(state) {
-      // If we're using the dialog polyfil, .offset() will calculate the
+      // If we're using the dialog polyfill, .offset() will calculate the
       // correct trigger position for us. If we aren't, .offset() needs
       // to be subtracted from the document's scroll position. This
       // fixes an issue we have with chrome, which doesn't use the polyfill.
