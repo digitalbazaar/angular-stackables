@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.0.3 - 2016-07-08
+
+### Fixed
+- Remove scrolling adjustment as it is no longer broken in Chrome.
+
 ## 1.0.2 - 2016-06-28
 
 ### Fixed
