@@ -166,7 +166,8 @@ function stackableDirective() {
         var count = body.data('stackables') || 0;
         body.data('stackables', count + 1);
         if('history' in window) {
-          window.history.pushState({stackable: _id}, '');
+          window.history.pushState({stackable: _id, count: 1}, '');
+          window.history.pushState({stackable: _id, count: 2}, '');
           window.addEventListener('popstate', handleBackButton);
         }
       }
@@ -180,14 +181,38 @@ function stackableDirective() {
         window.removeEventListener('popstate', handleBackButton);
         if('history' in window && window.history.state &&
           window.history.state.stackable === _id) {
-          window.history.back();
+          var remove = window.history.state.count;
+          while(remove > 0) {
+            console.log('history.back');
+            window.history.back();
+            remove -= 1;
+          }
         }
       }
 
       function handleBackButton(event) {
-        scope.stackable.error = 'canceled';
-        scope.stackable.result = null;
-        dialog.close();
+        /* Note: If this modal is closed without hitting `back`, then this
+          handler will be removed before it is called.
+
+          If `back` was pushed on this modal, then the current state
+          will have this modal's stackable `_id` and a `count` of 1. There
+          should be no be no other way for that particular state to reach
+          this handler.
+
+          If a child modal (or other descendant) is closed by hitting `back`
+          or directly, this handler will be called multiple times, but all but
+          the last call will be with a state that uses the descendant's
+          stackable `_id`. The last call will use a state with this stackable's
+          `_id` but a `count` of 2.
+        */
+        if('history' in window && window.history.state &&
+          window.history.state.stackable === _id &&
+          window.history.state.count === 1) {
+          console.log('closing', window.history.state);
+          scope.stackable.error = 'canceled';
+          scope.stackable.result = null;
+          dialog.close();
+        }
       }
     };
   }
