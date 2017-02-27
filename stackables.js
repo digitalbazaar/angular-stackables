@@ -1,7 +1,7 @@
 /*!
  * Stackables module.
  *
- * Copyright (c) 2014-2016 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2014-2017 Digital Bazaar, Inc. All rights reserved.
  *
  * @author Dave Longley
  */
@@ -31,6 +31,7 @@ function stackableDirective() {
 
   function Controller() {
     var self = this;
+    var _id = '' + Math.floor(Math.random() * 0x7FFFFFFF);
 
     // link the dialog element
     self.link = function(scope, element) {
@@ -110,8 +111,7 @@ function stackableDirective() {
             }
             self.isOpen = true;
             scope.stackable.error = scope.stackable.result = undefined;
-            var count = body.data('stackables') || 0;
-            body.data('stackables', count + 1);
+            increaseModalCount();
           }
         } else if(self.isOpen) {
           // schedule dialog close to avoid $digest already in progress
@@ -162,12 +162,32 @@ function stackableDirective() {
         });
       };
 
+      function increaseModalCount() {
+        var count = body.data('stackables') || 0;
+        body.data('stackables', count + 1);
+        if('history' in window) {
+          window.history.pushState({stackable: _id}, '');
+          window.addEventListener('popstate', handleBackButton);
+        }
+      }
+
       function decreaseModalCount() {
         var count = body.data('stackables') - 1;
         body.data('stackables', count);
         if(count === 0) {
           body.removeClass('stackable-modal-open');
         }
+        window.removeEventListener('popstate', handleBackButton);
+        if('history' in window && window.history.state &&
+          window.history.state.stackable === _id) {
+          window.history.back();
+        }
+      }
+
+      function handleBackButton(event) {
+        scope.stackable.error = 'canceled';
+        scope.stackable.result = null;
+        dialog.close();
       }
     };
   }
