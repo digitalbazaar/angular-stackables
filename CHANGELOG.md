@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.1 - 2017-02-27
+
+### Fixed
+- Fix history bug with descendants.
+
 ## 1.1.0 - 2017-02-26
 
 ### Added
