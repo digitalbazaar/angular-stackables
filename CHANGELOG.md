@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.0 - 2017-02-26
+
+### Added
+- Handle `back` button when stackables are open.
+
 ## 1.0.3 - 2016-07-08
 
 ### Fixed
