@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.2 - 2017-02-27
+
+### Fixed
+- Remove logging.
+
 ## 1.1.1 - 2017-02-27
 
 ### Fixed
