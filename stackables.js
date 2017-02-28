@@ -183,7 +183,6 @@ function stackableDirective() {
           window.history.state.stackable === _id) {
           var remove = window.history.state.count;
           while(remove > 0) {
-            console.log('history.back');
             window.history.back();
             remove -= 1;
           }
@@ -208,7 +207,6 @@ function stackableDirective() {
         if('history' in window && window.history.state &&
           window.history.state.stackable === _id &&
           window.history.state.count === 1) {
-          console.log('closing', window.history.state);
           scope.stackable.error = 'canceled';
           scope.stackable.result = null;
           dialog.close();
