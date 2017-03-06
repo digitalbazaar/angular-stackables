@@ -143,7 +143,6 @@ function stackableDirective() {
       });
 
       scope.$on('$destroy', function() {
-        console.trace('$destroy self.isOpen', self.isOpen, scope);
         // ensure dialog is closed
         if(self.isOpen) {
           // the stackable count must be decremented here because the
@@ -216,10 +215,10 @@ function stackableDirective() {
       }
 
       function handleBackButton() {
-        // if the stackables count does not match this modal's stack position,
+        // if this modal's stackPosition is less than the current count,
         // then it is not the top modal on the stack so return early
         var count = body.data('stackables');
-        if(stackPosition !== count) {
+        if(stackPosition < count) {
           return;
         }
 
