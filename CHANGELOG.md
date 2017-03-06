@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.3 - 2017-03-06
+
+### Fixed
+- Fix page reload bug when hitting `back` on stacked modals.
+
 ## 1.1.2 - 2017-02-27
 
 ### Fixed
