@@ -23,6 +23,22 @@ var usePolyfill = angular.element('<dialog></dialog>');
 usePolyfill = (!usePolyfill[0].showModal &&
   typeof dialogPolyfill !== 'undefined');
 
+(function() {
+  // restore page history if necessary; this handles the case where the
+  // user opens a modal, navigates to another site, and then presses the
+  // `back` button... this will ensure to restore the original state as
+  // if the modal was never opened on the page
+  var count = angular.element('body').data('stackables') || 0;
+  if(count === 0 && _hasHistoryAPI() && window.history.state &&
+    window.history.state.stackables) {
+    window.history.back();
+  }
+})();
+
+function _hasHistoryAPI() {
+  return 'history' in window;
+}
+
 function stackableDirective() {
   return {
     restrict: 'A',
@@ -31,7 +47,6 @@ function stackableDirective() {
 
   function Controller() {
     var self = this;
-    var _id = '' + Math.floor(Math.random() * 0x7FFFFFFF);
 
     // link the dialog element
     self.link = function(scope, element) {
@@ -41,6 +56,7 @@ function stackableDirective() {
       var body = angular.element('body');
       var dialog = element[0];
       var parent;
+      var stackPosition;
 
       // get z-index of parent dialog, if any
       var parentDialog = element.parent().closest('dialog');
@@ -127,6 +143,7 @@ function stackableDirective() {
       });
 
       scope.$on('$destroy', function() {
+        console.trace('$destroy self.isOpen', self.isOpen, scope);
         // ensure dialog is closed
         if(self.isOpen) {
           // the stackable count must be decremented here because the
@@ -163,11 +180,18 @@ function stackableDirective() {
       };
 
       function increaseModalCount() {
+        // increment total stack count and track stack position so `back`
+        // button behavior can be implemented properly
         var count = body.data('stackables') || 0;
-        body.data('stackables', count + 1);
-        if('history' in window) {
-          window.history.pushState({stackable: _id, count: 1}, '');
-          window.history.pushState({stackable: _id, count: 2}, '');
+        stackPosition = count + 1;
+        body.data('stackables', stackPosition);
+
+        if(_hasHistoryAPI()) {
+          if(count === 0) {
+            // add a history item to enable `back` button to close modals
+            window.history.pushState({stackables: true}, '');
+          }
+          // watch for `back` button presses
           window.addEventListener('popstate', handleBackButton);
         }
       }
@@ -178,39 +202,38 @@ function stackableDirective() {
         if(count === 0) {
           body.removeClass('stackable-modal-open');
         }
-        window.removeEventListener('popstate', handleBackButton);
-        if('history' in window && window.history.state &&
-          window.history.state.stackable === _id) {
-          var remove = window.history.state.count;
-          while(remove > 0) {
+
+        if(_hasHistoryAPI()) {
+          // stop watching `back` button presses for this modal
+          window.removeEventListener('popstate', handleBackButton);
+          // if modal stack is empty, remove stackables history item to
+          // restore regular `back` button functionality
+          if(count === 0 && window.history.state &&
+            window.history.state.stackables) {
             window.history.back();
-            remove -= 1;
           }
         }
       }
 
-      function handleBackButton(event) {
-        /* Note: If this modal is closed without hitting `back`, then this
-          handler will be removed before it is called.
-
-          If `back` was pushed on this modal, then the current state
-          will have this modal's stackable `_id` and a `count` of 1. There
-          should be no be no other way for that particular state to reach
-          this handler.
-
-          If a child modal (or other descendant) is closed by hitting `back`
-          or directly, this handler will be called multiple times, but all but
-          the last call will be with a state that uses the descendant's
-          stackable `_id`. The last call will use a state with this stackable's
-          `_id` but a `count` of 2.
-        */
-        if('history' in window && window.history.state &&
-          window.history.state.stackable === _id &&
-          window.history.state.count === 1) {
-          scope.stackable.error = 'canceled';
-          scope.stackable.result = null;
-          dialog.close();
+      function handleBackButton() {
+        // if the stackables count does not match this modal's stack position,
+        // then it is not the top modal on the stack so return early
+        var count = body.data('stackables');
+        if(stackPosition !== count) {
+          return;
         }
+
+        // this modal is the top modal, but is it the bottom?
+        if(stackPosition > 1) {
+          // this is not the bottom modal in the stack, so push history
+          // state to preserve ability to press back button to close modals
+          window.history.pushState({stackables: true}, '');
+        }
+
+        // close this modal, it was on top when `back` was pressed
+        scope.stackable.error = 'canceled';
+        scope.stackable.result = null;
+        dialog.close();
       }
     };
   }
