@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.4 - 2017-03-07
+
+### Fixed
+- Fix `back` button bug with popovers that load nested modals.
+
 ## 1.1.3 - 2017-03-06
 
 ### Fixed
