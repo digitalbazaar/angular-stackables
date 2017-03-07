@@ -43,6 +43,11 @@ function _hasHistoryAPI() {
 var _stack = [];
 
 function handleBackButton() {
+  // if back button was pressed after some external lib added its own
+  // history item, ignore that here
+  if(window.history.state && window.history.state.stackables) {
+    return;
+  }
   // push history state to preserve ability to press back button to close modals
   window.history.pushState({stackables: true}, '');
   // force close top modal
