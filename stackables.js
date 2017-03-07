@@ -39,6 +39,16 @@ function _hasHistoryAPI() {
   return 'history' in window;
 }
 
+// stackables stack
+var _stack = [];
+
+function handleBackButton() {
+  // push history state to preserve ability to press back button to close modals
+  window.history.pushState({stackables: true}, '');
+  // force close top modal
+  _stack[_stack.length - 1]._forceClose();
+}
+
 function stackableDirective() {
   return {
     restrict: 'A',
@@ -56,7 +66,6 @@ function stackableDirective() {
       var body = angular.element('body');
       var dialog = element[0];
       var parent;
-      var stackPosition;
 
       // get z-index of parent dialog, if any
       var parentDialog = element.parent().closest('dialog');
@@ -178,19 +187,24 @@ function stackableDirective() {
         });
       };
 
-      function increaseModalCount() {
-        // increment total stack count and track stack position so `back`
-        // button behavior can be implemented properly
-        var count = body.data('stackables') || 0;
-        stackPosition = count + 1;
-        body.data('stackables', stackPosition);
+      // private function for force closing modal, e.g. on `back` pressed
+      self._forceClose = function() {
+        scope.stackable.error = 'canceled';
+        scope.stackable.result = null;
+        dialog.close();
+      };
 
-        if(_hasHistoryAPI()) {
-          if(count === 0) {
-            // add a history item to enable `back` button to close modals
-            window.history.pushState({stackables: true}, '');
-          }
-          // watch for `back` button presses
+      function increaseModalCount() {
+        // increment total stackables count and push controller onto stack so
+        // `back` button can force close the modal
+        var count = (body.data('stackables') || 0) + 1;
+        body.data('stackables', count);
+        _stack.push(self);
+
+        if(_hasHistoryAPI() && count === 1) {
+          // add a history item to enable `back` button to close modals
+          window.history.pushState({stackables: true}, '');
+          // watch `back` button presses
           window.addEventListener('popstate', handleBackButton);
         }
       }
@@ -201,38 +215,17 @@ function stackableDirective() {
         if(count === 0) {
           body.removeClass('stackable-modal-open');
         }
+        _stack.splice(_stack.indexOf(self), 1);
 
-        if(_hasHistoryAPI()) {
-          // stop watching `back` button presses for this modal
+        if(_hasHistoryAPI() && count === 0) {
+          // stack is empty so stop watching `back` button presses
           window.removeEventListener('popstate', handleBackButton);
-          // if modal stack is empty, remove stackables history item to
-          // restore regular `back` button functionality
-          if(count === 0 && window.history.state &&
-            window.history.state.stackables) {
+          // remove stackables history item to restore regular `back` button
+          // functionality
+          if(window.history.state && window.history.state.stackables) {
             window.history.back();
           }
         }
-      }
-
-      function handleBackButton() {
-        // if this modal's stackPosition is less than the current count,
-        // then it is not the top modal on the stack so return early
-        var count = body.data('stackables');
-        if(stackPosition < count) {
-          return;
-        }
-
-        // this modal is the top modal, but is it the bottom?
-        if(stackPosition > 1) {
-          // this is not the bottom modal in the stack, so push history
-          // state to preserve ability to press back button to close modals
-          window.history.pushState({stackables: true}, '');
-        }
-
-        // close this modal, it was on top when `back` was pressed
-        scope.stackable.error = 'canceled';
-        scope.stackable.result = null;
-        dialog.close();
       }
     };
   }
