@@ -17,6 +17,7 @@ module.directive({stackable: stackableDirective});
 module.directive({stackableCancel: stackableCancelDirective});
 module.directive({stackableModal: stackableModalDirective});
 module.directive({stackablePopover: stackablePopoverDirective});
+module.directive({stackablePopoverContent: stackablePopoverContentDirective});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
 var usePolyfill = angular.element('<dialog></dialog>');
@@ -62,10 +63,24 @@ function stackableDirective() {
 
   function Controller() {
     var self = this;
+    var show;
 
     // link the dialog element
     self.link = function(scope, element) {
       scope.stackable = self;
+
+      // setup `show` mutator to allow `scope.show` to be a setter/getter
+      // function instead of a boolean variable
+      if(typeof scope.show === 'boolean') {
+        show = function(value) {
+          if(value === undefined) {
+            return scope.show;
+          }
+          scope.show = !!value;
+        };
+      } else {
+        show = scope.show;
+      }
 
       self.isOpen = false;
       var body = angular.element('body');
@@ -116,7 +131,7 @@ function stackableDirective() {
 
       var closeListener = function(e) {
         e.stopPropagation();
-        scope.show = self.isOpen = false;
+        show(self.isOpen = false);
         decreaseModalCount();
         scope.$digest();
         if(scope.closed) {
@@ -186,7 +201,7 @@ function stackableDirective() {
           if(shouldClose !== false) {
             self.error = err;
             self.result = result;
-            scope.show = false;
+            show(false);
             scope.$apply();
           }
         });
@@ -303,10 +318,11 @@ function stackablePopoverDirective() {
     replace: true,
     transclude: true,
     template: ' \
-      <dialog class="stackable stackable-popover" ng-show="show"> \
-        <div class="stackable-content" ng-if="show || persist" \
+      <dialog class="stackable stackable-popover" ng-show="state.show"> \
+        <div class="stackable-content" ng-if="state.show || persist" \
           ng-animate-children> \
-          <div class="stackable-popover-content stackable-fadein" \
+          <div stackable-popover-content="onContentLinked()" \
+            class="stackable-popover-content stackable-fadein" \
             style="display: none; opacity: 0" \
             ng-style="{\'z-index\': zIndex}" \
             ng-class="{ \
@@ -330,43 +346,66 @@ function stackablePopoverDirective() {
   };
 
   function Link(scope, element, attrs, ctrl) {
+    // setup `show` as a function dependent on scope.state
+    scope.show = function(value) {
+      if(value === undefined) {
+        return scope.state.show;
+      }
+      scope.state.show = value;
+    };
+
     // link stackable dialog
     ctrl.link(scope, element);
-
-    // popover not positioned yet
-    var positioned = false;
-
-    // watch state to reposition popover
-    scope.$watch('state', watchState, true);
-
-    // keep scope.state.show in-sync with show
-    scope.$watch('show', function(value) {
-      if(value !== undefined && scope.state) {
-        scope.state.show = value;
-      }
-    });
 
     // clean up any remaining handlers
     scope.$on('$destroy', function() {
       doc.off('keyup', closeOnEscape).off('click', closeOnClick);
     });
 
+    // called whenever content is linked (after the popover is shown)
+    var contentLinked = false;
+    scope.onContentLinked = function() {
+      var content = element.find('.stackable-popover-content');
+      // clear `none` display style that was set in the popover template (it
+      // was used to prevent flash of content); it must be cleared to allow the
+      // browser to layout the popover so its dimensions can be measured prior
+      // to positioning and we must delay that positioning until the next tick
+      // via `setTimeout` to let the browser run that layout code
+      content.css({display: ''});
+      // schedule positioning to allow browser to layout
+      setTimeout(function() {
+        // clear initial opacity style to allow any animation to run
+        content.css({opacity: ''});
+        reposition(content);
+        contentLinked = true;
+      });
+    };
+
+    // watch state to reposition popover
+    scope.$watch('state', watchState, true);
+
     var doc = angular.element(document);
-    var repositionId = null;
-    function watchState(state) {
-      if(state) {
-        scope.show = state.show;
-        if(state.show) {
-          // close when pressing escape anywhere or clicking away
-          if(!positioned) {
-            doc.keyup(closeOnEscape).click(closeOnClick);
-          }
-          // schedule repositioning
-          repositionId = setTimeout(repositionIfShown);
-        } else {
+    function watchState(newState, oldState) {
+      if(!newState) {
+        return;
+      }
+
+      if(newState.show) {
+        if(!oldState.show || newState === oldState) {
+          // just shown, add handlers to close when pressing escape anywhere
+          // or clicking away
+          doc.keyup(closeOnEscape).click(closeOnClick);
+        }
+        if(contentLinked) {
+          reposition();
+        }
+      } else {
+        if(oldState.show || newState === oldState) {
+          // just hidden, remove handlers
           doc.off('keyup', closeOnEscape).off('click', closeOnClick);
-          positioned = false;
-          clearTimeout(repositionId);
+          if(!scope.persist) {
+            contentLinked = false;
+          }
         }
       }
     }
@@ -391,16 +430,11 @@ function stackablePopoverDirective() {
       }
     }
 
-    function repositionIfShown() {
-      // only reposition if content is shown
-      var content = element.find('.stackable-popover-content');
-      if(!content.length) {
-        return;
-      }
-      reposition(content);
-    }
-
     function reposition(content) {
+      if(!content) {
+        content = element.find('.stackable-popover-content');
+      }
+
       var width = content.outerWidth(false);
       var height = content.outerHeight(false);
 
@@ -419,14 +453,13 @@ function stackablePopoverDirective() {
 
       // calculate offset delta between content and its trigger element
       // and any delta between content offset and position
-      var $content = angular.element(content);
       content.css({
         top: scope.state.position.top,
         left: scope.state.position.left,
         'z-index': zIndex + 1
       });
-      var offset = $content.offset();
-      var position = $content.position();
+      var offset = content.offset();
+      var position = content.position();
       var delta = {
         top: (scope.state.position.top - offset.top) +
           (offset.top - position.top),
@@ -484,12 +517,22 @@ function stackablePopoverDirective() {
       position.top = (position.top + delta.top) + 'px';
       position.left = (position.left + delta.left) + 'px';
       content.css(position);
-      if(!positioned) {
-        content.css({display: '', opacity: ''});
-        positioned = true;
-        scope.$digest();
-      }
     }
+  }
+}
+
+function stackablePopoverContentDirective() {
+  return {
+    restrict: 'A',
+    scope: {
+      onLink: '&stackablePopoverContent'
+    },
+    link: Link
+  };
+
+  function Link(scope) {
+    // notify of linkage
+    scope.onLink();
   }
 }
 
@@ -589,6 +632,7 @@ function stackableTriggerDirective($parse) {
 
     function updateState(state) {
       var offset = element.offset();
+      var scrollOffset = angular.element(document).scrollTop();
       state.position = {
         top: offset.top,
         left: offset.left,
