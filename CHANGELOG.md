@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.6 - 2017-03-08
+
+### Fixed
+- Handle case where `show` is `undefined`.
+
 ## 1.1.5 - 2017-03-08
 
 ### Fixed
