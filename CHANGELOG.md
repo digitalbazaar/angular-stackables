@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.1.5 - 2017-03-08
+
+### Fixed
+- Fix popover positioning bugs.
+
 ## 1.1.4 - 2017-03-07
 
 ### Fixed
