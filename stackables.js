@@ -71,7 +71,7 @@ function stackableDirective() {
 
       // setup `show` mutator to allow `scope.show` to be a setter/getter
       // function instead of a boolean variable
-      if(typeof scope.show === 'boolean') {
+      if(typeof scope.show !== 'function') {
         show = function(value) {
           if(value === undefined) {
             return scope.show;
