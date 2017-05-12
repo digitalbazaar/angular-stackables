@@ -11,6 +11,8 @@
 
 function init(angular, dialogPolyfill) {
 
+/** ANGULAR REGISTRATION **/
+
 var module = angular.module('stackables', []);
 
 module.directive({stackable: stackableDirective});
@@ -20,9 +22,63 @@ module.directive({stackablePopover: stackablePopoverDirective});
 module.directive({stackablePopoverContent: stackablePopoverContentDirective});
 module.directive({stackableTrigger: ['$parse', stackableTriggerDirective]});
 
+/** ANGULAR CONFIGURATION **/
+
+if(angular.version.major >= 1 && angular.version.minor >= 6) {
+  /* Note: Angular 1.6+ patched a bug that caused angular's `$location` to
+  miss state changes pushed via `window.history.pushState`.
+
+  https://github.com/angular/angular.js/commit/2b360bf30528e636da429396f2fe740c3f97c6f8
+
+  This library was using that "bug" to ensure that the back button could be
+  used to close stackables without affecting the location or route in Angular.
+  This decorator reverses the change by preventing listeners that are passed to
+  `$browser.onUrlChange` from receiving state changes to history when they
+  are related to opening or closing stackables. */
+  module.config(['$provide', function($provide) {
+    $provide.decorator('$browser', ['$delegate', function($delegate) {
+      var onUrlChange = $delegate.onUrlChange;
+      $delegate.onUrlChange = function(callback) {
+        onUrlChange(function(newUrl, newState) {
+          // if the URL isn't changing then this is a state change, and
+          // we don't report state changes when we open stackables (stack
+          // length > 0) or when we close them (reverting back to previous
+          // state before stackables were open)
+          if((_stack.length > 0 || _prevHistoryState === newState) &&
+            newUrl === _stackUrl) {
+            // Note: this will also prevent users from clicking on links to
+            // the same route that a stackable was opened on when those links
+            // are inside a modal, don't ever use those links w/this
+            // implementation
+            return;
+          }
+          return callback(newUrl, newState);
+        });
+      };
+      return $delegate;
+    }]);
+  }]);
+}
+
+/** DIALOG POLYFILL **/
+
 var usePolyfill = angular.element('<dialog></dialog>');
 usePolyfill = (!usePolyfill[0].showModal &&
   typeof dialogPolyfill !== 'undefined');
+
+/** HISTORY MANAGEMENT **/
+
+if(_hasHistoryAPI()) {
+  // add `popstate` handler early, before angular `$browser` adds its own
+  // in order to prevent angular from reading an additional history state
+  // as we may push the stackables history state back on in the handler
+  window.addEventListener('popstate', function() {
+    if(_stack.length === 0) {
+      return;
+    }
+    handleBackButton();
+  });
+}
 
 (function() {
   // restore page history if necessary; this handles the case where the
@@ -36,24 +92,33 @@ usePolyfill = (!usePolyfill[0].showModal &&
   }
 })();
 
+// stackables stack, URL that first stackable was opened on, and previous
+// history state
+var _stack = [];
+var _stackUrl;
+var _prevHistoryState;
+
+function enableBackButton() {
+  _prevHistoryState = window.history.state;
+  window.history.pushState({stackables: true}, '');
+}
+
+function handleBackButton() {
+  // since the back button was pressed, the stackable history state was removed
+  // from the history stack; but there may still be stackables open, so add it
+  // back here to preserve ability to press back button to close them; it will
+  // be auto-removed when the last stackable is closed and the stackable count
+  // is decremented to zero
+  enableBackButton();
+  // force close top modal
+  _stack[_stack.length - 1]._forceClose();
+}
+
 function _hasHistoryAPI() {
   return 'history' in window;
 }
 
-// stackables stack
-var _stack = [];
-
-function handleBackButton() {
-  // if back button was pressed after some external lib added its own
-  // history item, ignore that here
-  if(window.history.state && window.history.state.stackables) {
-    return;
-  }
-  // push history state to preserve ability to press back button to close modals
-  window.history.pushState({stackables: true}, '');
-  // force close top modal
-  _stack[_stack.length - 1]._forceClose();
-}
+/** DIRECTIVES **/
 
 function stackableDirective() {
   return {
@@ -61,7 +126,7 @@ function stackableDirective() {
     controller: Controller
   };
 
-  function Controller() {
+  function Controller($browser) {
     var self = this;
     var show;
 
@@ -133,7 +198,7 @@ function stackableDirective() {
         e.stopPropagation();
         show(self.isOpen = false);
         decreaseModalCount();
-        scope.$digest();
+        scope.$apply();
         if(scope.closed) {
           scope.closed.call(scope.$parent, {
             err: scope.stackable.error,
@@ -217,15 +282,16 @@ function stackableDirective() {
       function increaseModalCount() {
         // increment total stackables count and push controller onto stack so
         // `back` button can force close the modal
+        // TODO: can `body.data('stackables')` be removed entirely and
+        // be replaced with `_stack.length` to determine the count?
         var count = (body.data('stackables') || 0) + 1;
         body.data('stackables', count);
         _stack.push(self);
 
         if(_hasHistoryAPI() && count === 1) {
           // add a history item to enable `back` button to close modals
-          window.history.pushState({stackables: true}, '');
-          // watch `back` button presses
-          window.addEventListener('popstate', handleBackButton);
+          _stackUrl = $browser.url();
+          enableBackButton();
         }
       }
 
@@ -238,12 +304,12 @@ function stackableDirective() {
         _stack.splice(_stack.indexOf(self), 1);
 
         if(_hasHistoryAPI() && count === 0) {
-          // stack is empty so stop watching `back` button presses
-          window.removeEventListener('popstate', handleBackButton);
           // remove stackables history item to restore regular `back` button
           // functionality
           if(window.history.state && window.history.state.stackables) {
             window.history.back();
+            // Note: cannot see changes to `window.history.state` until next
+            // tick of event loop
           }
         }
       }
