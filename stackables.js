@@ -123,7 +123,7 @@ function _hasHistoryAPI() {
 function stackableDirective() {
   return {
     restrict: 'A',
-    controller: Controller
+    controller: ['$browser', Controller]
   };
 
   function Controller($browser) {
