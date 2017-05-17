@@ -85,7 +85,7 @@ if(_hasHistoryAPI()) {
   // user opens a modal, navigates to another site, and then presses the
   // `back` button... this will ensure to restore the original state as
   // if the modal was never opened on the page
-  var count = angular.element('body').data('stackables') || 0;
+  var count = angular.element(document.body).data('stackables') || 0;
   if(count === 0 && _hasHistoryAPI() && window.history.state &&
     window.history.state.stackables) {
     window.history.back();
@@ -148,7 +148,7 @@ function stackableDirective() {
       }
 
       self.isOpen = false;
-      var body = angular.element('body');
+      var body = angular.element(document.body);
       var dialog = element[0];
       var parent;
 
