@@ -66,6 +66,19 @@ var usePolyfill = angular.element('<dialog></dialog>');
 usePolyfill = (!usePolyfill[0].showModal &&
   typeof dialogPolyfill !== 'undefined');
 
+if(window.Element && !Element.prototype.closest) {
+  Element.prototype.closest = function(s) {
+    var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+      i,
+      el = this;
+    do {
+      i = matches.length;
+      while (--i >= 0 && matches.item(i) !== el) {}
+    } while ((i < 0) && (el = el.parentElement));
+    return el;
+  };
+}
+
 /** HISTORY MANAGEMENT **/
 
 if(_hasHistoryAPI()) {
@@ -153,7 +166,7 @@ function stackableDirective() {
       var parent;
 
       // get z-index of parent dialog, if any
-      var parentDialog = element.parent().closest('dialog');
+      var parentDialog = angular.element(element.parent()[0].closest('dialog'));
       if(parentDialog.length === 0) {
         // no dialog parent; move dialog to body to simplify z-indexing
         parent = body;
