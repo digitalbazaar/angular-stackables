@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.2.0 - 2017-05-26
+
+### Added
+- Add support for Angular 1.6.x.
+
 ## 1.1.6 - 2017-03-08
 
 ### Fixed
