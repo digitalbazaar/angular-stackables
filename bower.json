@@ -1,6 +1,5 @@
 {
   "name": "angular-stackables",
-  "version": "1.0.4-0",
   "description": "AngularJS stackable widgets built on HTML5 dialog.",
   "moduleType": "amd",
   "authors": [
@@ -8,7 +7,7 @@
   ],
   "license": "BSD",
   "main": [
-    "stackables.js",
+    "index.js",
     "stackables.css"
   ],
   "dependencies": {
