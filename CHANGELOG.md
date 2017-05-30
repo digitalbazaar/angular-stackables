@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.2.1 - 2017-05-30
+
+### Fixed
+- Ensure parent of stackable exists before calling `closest`.
+
 ## 1.2.0 - 2017-05-26
 
 ### Added
