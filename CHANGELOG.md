@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.2.2 - 2017-05-30
+
+### Fixed
+- Add `bedrock` property to package.json.
+
 ## 1.2.1 - 2017-05-30
 
 ### Fixed
