@@ -1,6 +1,6 @@
 {
   "name": "angular-stackables",
-  "version": "1.2.2-0",
+  "version": "1.2.2",
   "description": "angular-stackables",
   "main": "index.js",
   "style": "stackables.css",
