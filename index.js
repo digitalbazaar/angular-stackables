@@ -164,10 +164,14 @@ function stackableDirective() {
       var body = angular.element(document.body);
       var dialog = element[0];
       var parent;
+      var parentDialog;
 
       // get z-index of parent dialog, if any
-      var parentDialog = angular.element(element.parent()[0].closest('dialog'));
-      if(parentDialog.length === 0) {
+      parent = element.parent()[0];
+      if(parent) {
+        parentDialog = angular.element(parent.closest('dialog'));
+      }
+      if(!parentDialog || parentDialog.length === 0) {
         // no dialog parent; move dialog to body to simplify z-indexing
         parent = body;
       } else {
