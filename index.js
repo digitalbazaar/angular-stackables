@@ -741,7 +741,7 @@ function _getOuterWidth(element, withMargin) {
   var width = element.offsetWidth;
   if(withMargin) {
     var style = getComputedStyle(element);
-    width += parseInt(style.marginLeft) + parseInt(style.marginRight);
+    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
   }
   return width;
 }
@@ -750,7 +750,7 @@ function _getOuterHeight(element, withMargin) {
   var height = element.offsetHeight;
   if(withMargin) {
     var style = getComputedStyle(element);
-    height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
   }
   return height;
 }
