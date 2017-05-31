@@ -541,7 +541,7 @@ function stackablePopoverDirective() {
         left: scope.state.position.left,
         'z-index': zIndex + 1
       });
-      var offset = content.offset();
+      var offset = _getOffset(content[0]);
       var position = content.position();
       var delta = {
         top: (scope.state.position.top - offset.top) +
@@ -714,8 +714,7 @@ function stackableTriggerDirective($parse) {
     }
 
     function updateState(state) {
-      var offset = element.offset();
-      var scrollOffset = angular.element(document).scrollTop();
+      var offset = _getOffset(element[0]);
       state.position = {
         top: offset.top,
         left: offset.left,
@@ -726,6 +725,16 @@ function stackableTriggerDirective($parse) {
       };
     }
   }
+}
+
+/** UTILS **/
+
+function _getOffset(element) {
+  var rect = element.getBoundingClientRect();
+  return {
+    top: rect.top + document.body.scrollTop,
+    left: rect.left + document.body.scrollLeft
+  };
 }
 
 } // end init() definition
