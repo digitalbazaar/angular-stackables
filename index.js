@@ -714,14 +714,15 @@ function stackableTriggerDirective($parse) {
     }
 
     function updateState(state) {
-      var offset = _getOffset(element[0]);
+      var el = element[0];
+      var offset = _getOffset(el);
       state.position = {
         top: offset.top,
         left: offset.left,
-        height: _getOuterHeight(element, false),
-        width: _getOuterWidth(element, false),
-        heightWithMargin: _getOuterHeight(element, true),
-        widthWithMargin: _getOuterWidth(element, true)
+        height: _getOuterHeight(el, false),
+        width: _getOuterWidth(el, false),
+        heightWithMargin: _getOuterHeight(el, true),
+        widthWithMargin: _getOuterWidth(el, true)
       };
     }
   }
