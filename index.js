@@ -518,8 +518,8 @@ function stackablePopoverDirective() {
         content = element.find('.stackable-popover-content');
       }
 
-      var width = content.outerWidth(false);
-      var height = content.outerHeight(false);
+      var width = _getOuterWidth(content[0], false);
+      var height = _getOuterHeight(content[0], false);
 
       // ensure z-index is above parent dialog
       var parentDialog = content.parent().closest('dialog');
@@ -718,10 +718,10 @@ function stackableTriggerDirective($parse) {
       state.position = {
         top: offset.top,
         left: offset.left,
-        height: element.outerHeight(false),
-        width: element.outerWidth(false),
-        heightWithMargin: element.outerHeight(true),
-        widthWithMargin: element.outerWidth(true)
+        height: _getOuterHeight(element, false),
+        width: _getOuterWidth(element, false),
+        heightWithMargin: _getOuterHeight(element, true),
+        widthWithMargin: _getOuterWidth(element, true)
       };
     }
   }
@@ -735,6 +735,24 @@ function _getOffset(element) {
     top: rect.top + document.body.scrollTop,
     left: rect.left + document.body.scrollLeft
   };
+}
+
+function _getOuterWidth(element, withMargin) {
+  var width = element.offsetWidth;
+  if(withMargin) {
+    var style = getComputedStyle(element);
+    width += parseInt(style.marginLeft) + parseInt(style.marginRight);
+  }
+  return width;
+}
+
+function _getOuterHeight(element, withMargin) {
+  var height = element.offsetHeight;
+  if(withMargin) {
+    var style = getComputedStyle(element);
+    height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+  }
+  return height;
 }
 
 } // end init() definition
