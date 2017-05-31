@@ -60,7 +60,7 @@ if(angular.version.major >= 1 && angular.version.minor >= 6) {
   }]);
 }
 
-/** DIALOG POLYFILL **/
+/** POLYFILLS **/
 
 var usePolyfill = angular.element('<dialog></dialog>');
 usePolyfill = (!usePolyfill[0].showModal &&
@@ -68,15 +68,24 @@ usePolyfill = (!usePolyfill[0].showModal &&
 
 if(window.Element && !Element.prototype.closest) {
   Element.prototype.closest = function(s) {
-    var matches = (this.document || this.ownerDocument).querySelectorAll(s),
-      i,
-      el = this;
-    do {
-      i = matches.length;
-      while (--i >= 0 && matches.item(i) !== el) {}
-    } while ((i < 0) && (el = el.parentElement));
-    return el;
+    return _closestElement(this, s);
   };
+}
+
+function _closestElement(element, s) {
+  var matches;
+  if(typeof s === 'string') {
+    matches = (element.document || element.ownerDocument).querySelectorAll(s);
+  } else {
+    matches = [s];
+    matches.item = function() { return s; };
+  }
+  var i, el = element;
+  do {
+    i = matches.length;
+    while (--i >= 0 && matches.item(i) !== el) {}
+  } while ((i < 0) && (el = el.parentElement));
+  return el;
 }
 
 /** HISTORY MANAGEMENT **/
@@ -448,7 +457,8 @@ function stackablePopoverDirective() {
     // called whenever content is linked (after the popover is shown)
     var contentLinked = false;
     scope.onContentLinked = function() {
-      var content = element.find('.stackable-popover-content');
+      var content = angular.element(
+        element[0].querySelector('.stackable-popover-content'));
       // clear `none` display style that was set in the popover template (it
       // was used to prevent flash of content); it must be cleared to allow the
       // browser to layout the popover so its dimensions can be measured prior
@@ -477,7 +487,7 @@ function stackablePopoverDirective() {
         if(!oldState.show || newState === oldState) {
           // just shown, add handlers to close when pressing escape anywhere
           // or clicking away
-          doc.keyup(closeOnEscape).click(closeOnClick);
+          doc.on('keyup', closeOnEscape).on('click', closeOnClick);
         }
         if(contentLinked) {
           reposition();
@@ -496,10 +506,9 @@ function stackablePopoverDirective() {
     function closeOnClick(e) {
       // close if target is not in the popover and trigger was not clicked
       // (also clear trigger click status)
-      var target = angular.element(e.target);
       var triggerClicked = scope.state.triggerClicked;
       scope.state.triggerClicked = false;
-      if(!triggerClicked && target.closest(element).length === 0) {
+      if(!triggerClicked && !_closestElement(e.target, element)) {
         scope.state.show = false;
         scope.$apply();
       }
@@ -515,21 +524,22 @@ function stackablePopoverDirective() {
 
     function reposition(content) {
       if(!content) {
-        content = element.find('.stackable-popover-content');
+        content = angular.element(
+          element[0].querySelector('.stackable-popover-content'));
       }
 
       var width = _getOuterWidth(content[0], false);
       var height = _getOuterHeight(content[0], false);
 
       // ensure z-index is above parent dialog
-      var parentDialog = content.parent().closest('dialog');
-      // JQuery in WebKit browsers does not give back a z-index value if
+      var parentDialog = content.parent()[0].closest('dialog');
+      // WebKit browsers does not give back a z-index value if
       // an element's position is not explicitly set. Retrieve it from
       // the style instead.
       // https://bugs.jquery.com/ticket/9667
       //var zIndex = parentDialog.css('z-index');
-      var zIndex = parentDialog.prop('style')['zIndex'];
-      var zIndexInt = parseInt(zIndex, 10);
+      var zIndex = window.getComputedStyle(parentDialog).zIndex;
+      var zIndexInt = parseInt(zIndex, 10) + 1;
       if(zIndexInt.toString() !== zIndex) {
         zIndex = 0;
       }
@@ -537,12 +547,12 @@ function stackablePopoverDirective() {
       // calculate offset delta between content and its trigger element
       // and any delta between content offset and position
       content.css({
-        top: scope.state.position.top,
-        left: scope.state.position.left,
+        top: scope.state.position.top + 'px',
+        left: scope.state.position.left + 'px',
         'z-index': zIndex + 1
       });
       var offset = _getOffset(content[0]);
-      var position = content.position();
+      var position = _getPosition(content[0]);
       var delta = {
         top: (scope.state.position.top - offset.top) +
           (offset.top - position.top),
@@ -652,7 +662,7 @@ function stackableTriggerDirective($parse) {
     element.on('$destroy', cleanup);
 
     // update element position when window resized
-    angular.element(window).resize(resize);
+    angular.element(window).on('resize', resize);
 
     var toggleEvent = attrs.stackableToggle || 'click';
     if(toggleEvent === 'hover') {
@@ -731,17 +741,25 @@ function stackableTriggerDirective($parse) {
 /** UTILS **/
 
 function _getOffset(element) {
+  if(!element.getClientRects().length) {
+    return {top: 0, left: 0};
+  }
+
   var rect = element.getBoundingClientRect();
+  var doc = element.ownerDocument;
+  var docElem = doc.documentElement;
+  var win = doc.defaultView;
+
   return {
-    top: rect.top + document.body.scrollTop,
-    left: rect.left + document.body.scrollLeft
+    top: rect.top + win.pageYOffset - docElem.clientTop,
+    left: rect.left + win.pageXOffset - docElem.clientLeft
   };
 }
 
 function _getOuterWidth(element, withMargin) {
   var width = element.offsetWidth;
   if(withMargin) {
-    var style = getComputedStyle(element);
+    var style = window.getComputedStyle(element);
     width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
   }
   return width;
@@ -750,10 +768,50 @@ function _getOuterWidth(element, withMargin) {
 function _getOuterHeight(element, withMargin) {
   var height = element.offsetHeight;
   if(withMargin) {
-    var style = getComputedStyle(element);
+    var style = window.getComputedStyle(element);
     height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
   }
   return height;
+}
+
+function _getPosition(element) {
+  // partially cribbed from jQuery
+  var offsetParent;
+  var offset;
+  var parentOffset = {
+    top: 0, left: 0
+  };
+
+  var style = window.getComputedStyle(element);
+
+  if(style.position === 'fixed') {
+    offset = element.getBoundingClientRect();
+  } else {
+    offsetParent = _getOffsetParent(element);
+    var offsetParentStyle = window.getComputedStyle(offsetParent);
+    offset = _getOffset(element);
+    parentOffset = _getOffset(offsetParent);
+    // add offset parent borders
+    parentOffset = {
+      top: parentOffset.top + parseInt(offsetParentStyle.borderTopWidth, 10),
+      left: parentOffset.left + parseInt(offsetParentStyle.borderLeftWidth, 10)
+    };
+  }
+
+  // subtract parent offsets and element margins
+  return {
+    top: offset.top - parentOffset.top - parseInt(style.marginTop, 10),
+    left: offset.left - parentOffset.left - parseInt(style.marginLeft, 10)
+  };
+}
+
+function _getOffsetParent(element) {
+  var offsetParent = element.offsetParent;
+  while(offsetParent &&
+    window.getComputedStyle(offsetParent).position === 'static') {
+    offsetParent = offsetParent.offsetParent;
+  }
+  return offsetParent || document.documentElement;
 }
 
 } // end init() definition
