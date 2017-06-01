@@ -1,5 +1,10 @@
 # angular-stackables ChangeLog
 
+## 1.2.3 - 2017-06-01
+
+### Fixed
+- Replace some usage of jquery functions that are not present in jqLite.
+
 ## 1.2.2 - 2017-05-30
 
 ### Fixed
