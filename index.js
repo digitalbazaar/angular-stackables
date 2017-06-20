@@ -235,7 +235,9 @@ function stackableDirective() {
       };
       dialog.addEventListener('close', closeListener);
 
-      scope.$watch('show', function(value) {
+      scope.$watch(function() {
+        return typeof scope.show === 'function' ? scope.show() : scope.show;
+      }, function(value) {
         if(value) {
           if(!self.isOpen) {
             parent.append(dialog);
