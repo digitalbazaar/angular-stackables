@@ -1,5 +1,11 @@
 # angular-stackables ChangeLog
 
+## 1.2.4 - 2017-06-20
+
+### Fixed
+- Fix issue where scrollbars would not reappear after modal was closed. This
+  issue was introduced in v1.1.5.
+
 ## 1.2.3 - 2017-06-01
 
 ### Fixed
