@@ -52,7 +52,8 @@ if(angular.version.major >= 1 && angular.version.minor >= 6) {
             // implementation
             return;
           }
-          return callback(newUrl, newState);
+          // return callback(newUrl, newState);
+          return;
         });
       };
       return $delegate;
@@ -331,15 +332,15 @@ function stackableDirective() {
         }
         _stack.splice(_stack.indexOf(self), 1);
 
-        if(_hasHistoryAPI() && count === 0) {
-          // remove stackables history item to restore regular `back` button
-          // functionality
-          if(window.history.state && window.history.state.stackables) {
-            window.history.back();
-            // Note: cannot see changes to `window.history.state` until next
-            // tick of event loop
-          }
-        }
+        // if(_hasHistoryAPI() && count === 0) {
+        //   // remove stackables history item to restore regular `back` button
+        //   // functionality
+        //   if(window.history.state && window.history.state.stackables) {
+        //     window.history.back();
+        //     // Note: cannot see changes to `window.history.state` until next
+        //     // tick of event loop
+        //   }
+        // }
       }
     };
   }
